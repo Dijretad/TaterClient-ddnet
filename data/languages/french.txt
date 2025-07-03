@@ -2215,3 +2215,6 @@ AntiPing: prediction margin
 
 Server could not be started. Make sure to grant the notification permission in the app settings so the server can run in the background.
 == 
+
+Show map times (top 5)
+== Afficher les temps de carte (top 5)

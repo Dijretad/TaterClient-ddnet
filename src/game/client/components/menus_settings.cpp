@@ -2446,6 +2446,9 @@ void CMenus::RenderSettingsAppearance(CUIRect MainView)
 		// Switch for dummy actions display
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudDummyActions, Localize("Show dummy actions"), &g_Config.m_ClShowhudDummyActions, &RightView, LineSize);
 
+		// Map times display
+		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudMapTimes, Localize("Show map times (top 5)"), &g_Config.m_ClShowhudMapTimes, &RightView, LineSize);
+
 		// Player movement information display settings
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudPlayerPosition, Localize("Show player position"), &g_Config.m_ClShowhudPlayerPosition, &RightView, LineSize);
 		DoButton_CheckBoxAutoVMarginAndSet(&g_Config.m_ClShowhudPlayerSpeed, Localize("Show player speed"), &g_Config.m_ClShowhudPlayerSpeed, &RightView, LineSize);

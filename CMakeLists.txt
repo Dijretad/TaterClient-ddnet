@@ -2460,6 +2460,8 @@ if(CLIENT)
     components/maplayers.h
     components/mapsounds.cpp
     components/mapsounds.h
+    components/maptimes.cpp
+    components/maptimes.h
     components/menu_background.cpp
     components/menu_background.h
     components/menus.cpp

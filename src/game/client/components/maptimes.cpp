@@ -84,7 +84,7 @@ void CMapTimes::RequestMapTimes(const char *pMapName)
 	m_pRequest->Timeout(CTimeout{10000, 0, 500, 10});
 	m_pRequest->WriteToMemory();
 	m_pRequest->LogProgress(HTTPLOG::FAILURE);
-	m_pGameClient->Http()->Run(m_pRequest);
+	GameClient()->Http()->Run(m_pRequest);
 	
 	log_debug("maptimes", "Requesting map times for '%s' from %s", pMapName, aUrl);
 }
@@ -124,7 +124,7 @@ void CMapTimes::ParseResponse(const char *pJson)
 	}
 	
 	// Parse the first 5 records
-	int RecordCount = minimum((int)pTop100->u.array.length, MAX_TOP_RECORDS);
+	int RecordCount = minimum((int)pTop100->u.array.length, (int)MAX_TOP_RECORDS);
 	for(int i = 0; i < RecordCount; i++)
 	{
 		const json_value *pRecord = pTop100->u.array.values[i];
@@ -259,10 +259,13 @@ void CMapTimes::UpdateTextContainers()
 		// Time (remove microseconds for cleaner display)
 		char aCleanTime[32];
 		str_copy(aCleanTime, Record.m_aTime, sizeof(aCleanTime));
-		char *pDot = str_find(aCleanTime, ".");
+		const char *pDot = str_find(aCleanTime, ".");
 		if(pDot && str_length(pDot) > 3)
 		{
-			pDot[3] = '\0'; // Keep only 2 decimal places
+			// Find position and truncate
+			int DotPos = pDot - aCleanTime;
+			if(DotPos + 3 < (int)sizeof(aCleanTime))
+				aCleanTime[DotPos + 3] = '\0'; // Keep only 2 decimal places
 		}
 		
 		TextRender()->SetCursor(&Cursor, 0, 0, FontSize, TEXTFLAG_RENDER);

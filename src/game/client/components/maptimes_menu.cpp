@@ -179,17 +179,17 @@ void CMapTimesMenu::OnRender()
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		return;
 
-	// EXACT dimensions and layout from scoreboard OnRender
-	const float Width = 400.0f * 3.0f;
-	const float Height = 650.0f;
-	const float w = Width;
-	const float h = Height;
+	// EXACT coordinate system from scoreboard OnRender
+	const float Height = 400.0f * 3.0f;
+	const float Width = Height * Graphics()->ScreenAspect();
+	Graphics()->MapScreen(0, 0, Width, Height);
 
+	// Use reasonable size for Map Times (smaller than full scoreboard)
+	const float ScoreboardWidth = 750.0f;
+	const float ScoreboardHeight = 500.0f;
 	const float TitleHeight = 60.0f;
-	const float x = Graphics()->ScreenWidth() / 2.0f - w / 2.0f;
-	const float y = 150.0f;
 
-	CUIRect Scoreboard = {x, y, w, h};
+	CUIRect Scoreboard = {(Width - ScoreboardWidth) / 2.0f, 150.0f, ScoreboardWidth, ScoreboardHeight + TitleHeight};
 	
 	// EXACT background from scoreboard
 	Scoreboard.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);

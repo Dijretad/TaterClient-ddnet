@@ -110,10 +110,13 @@ show_top_10
 
 ## Position et style
 
-- **Menu fullscreen** : Centre de l'écran avec fond semi-transparent
-- **Taille** : Adaptative selon le contenu et la configuration
+- **Menu style scoreboard** : Design inspiré du scoreboard avec layout structuré
+- **Colonnes organisées** : Rang | Nom du joueur | Temps (alignement professionnel)
+- **Titre contextuel** : "Map Times Leaderboard - [Nom de la carte]"
+- **Couleurs podium** : 🥇 Or, 🥈 Argent, 🥉 Bronze pour le top 3
+- **Lignes alternées** : Fond gris/noir alterné pour améliorer la lisibilité
+- **Layout adaptatif** : Taille et espacement automatiques selon le nombre d'entrées
 - **Taille de police** : Configurable via `cl_map_times_text_size` (défaut : 50%)
-- **Arrière-plan** : Noir semi-transparent
 - **Format des temps** : HH:MM:SS.XX (2 décimales seulement)
 - **Couleurs du texte** :
   - 1er place : Or (#FFD700)
@@ -146,5 +149,9 @@ show_top_10
 - **Ouverture** : Maintenez la touche configurée (défaut: T)
 - **Fermeture automatique** : Dès que vous relâchez la touche
 - **Fermeture manuelle** : Touche ESC
-- **Position** : Centre de l'écran avec fond semi-transparent
-- **Style** : Interface moderne avec couleurs du podium
+- **Style** : Interface inspirée du scoreboard avec fond sombre et design structuré
+- **Layout** : Titre en haut, colonnes organisées (Rang | Nom du joueur | Temps)
+- **Couleurs podium** : Or (1er), Argent (2ème), Bronze (3ème)
+- **Lignes alternées** : Fond gris alterné pour une meilleure lisibilité
+- **Responsive** : Adaptation automatique de la taille selon le nombre d'entrées
+- **Données temps réel** : Intégration directe avec l'API des Map Times

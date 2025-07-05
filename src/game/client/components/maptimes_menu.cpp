@@ -32,7 +32,7 @@ void CMapTimesMenu::RenderTitle(CUIRect TitleBar, const char *pTitle)
 	// EXACT title rendering from scoreboard
 	TitleBar.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);
 	
-	const float TitleFontSize = 40.0f;
+	const float TitleFontSize = 40.0f; // Slightly smaller title font
 	char aFullTitle[128];
 	const char *pCurrentMap = Client()->GetCurrentMap();
 	if(pCurrentMap && pCurrentMap[0] != '\0')
@@ -69,11 +69,11 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 		return;
 	}
 
-	// Fixed layout optimized for exactly 10 entries (like scoreboard with ~10 players)
-	const float LineHeight = 50.0f;
-	const float FontSize = 22.0f;
+	// Configurable layout parameters (adjustable via console)
+	const float LineHeight = (float)g_Config.m_ClMapTimesMenuLineHeight;
+	const float FontSize = (float)g_Config.m_ClMapTimesMenuFontSize;
 	const float RoundRadius = 5.0f;
-	const float Spacing = 2.0f;
+	const float Spacing = (float)g_Config.m_ClMapTimesMenuSpacing;
 
 	// Column layout EXACTLY like scoreboard
 	const float RankOffset = Scoreboard.x + 40.0f;
@@ -103,21 +103,7 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 		Scoreboard.HSplitTop(LineHeight + Spacing, &RowAndSpacing, &Scoreboard);
 		RowAndSpacing.HSplitTop(LineHeight, &Row, nullptr);
 
-		// EXACT background color logic from scoreboard but with podium colors
-		ColorRGBA BackgroundColor;
-		if(pRecord && pRecord->m_Rank == 1) // Gold
-			BackgroundColor = ColorRGBA(1.0f, 0.84f, 0.0f, 0.5f);
-		else if(pRecord && pRecord->m_Rank == 2) // Silver
-			BackgroundColor = ColorRGBA(0.75f, 0.75f, 0.75f, 0.5f);
-		else if(pRecord && pRecord->m_Rank == 3) // Bronze
-			BackgroundColor = ColorRGBA(0.8f, 0.52f, 0.25f, 0.5f);
-		else if(i % 2 == 0)
-			BackgroundColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f);
-		else
-			BackgroundColor = ColorRGBA(0.1f, 0.1f, 0.1f, 0.25f);
-
-		// EXACT draw from scoreboard
-		RowAndSpacing.Draw(BackgroundColor, IGraphics::CORNER_ALL, RoundRadius);
+		// No background for individual rows - cleaner look
 
 		if(!pRecord)
 		{
@@ -129,31 +115,23 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 			continue;
 		}
 
-		// EXACT text color logic from scoreboard for podium places
+		// Set colors for podium places (text only)
 		ColorRGBA TextColor = TextRender()->DefaultTextColor();
 		if(pRecord->m_Rank == 1)
-			TextColor = ColorRGBA(1.0f, 0.84f, 0.0f, 1.0f);
+			TextColor = ColorRGBA(1.0f, 0.84f, 0.0f, 1.0f); // Gold
 		else if(pRecord->m_Rank == 2)
-			TextColor = ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f);
+			TextColor = ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f); // Silver
 		else if(pRecord->m_Rank == 3)
-			TextColor = ColorRGBA(0.8f, 0.52f, 0.25f, 1.0f);
+			TextColor = ColorRGBA(0.8f, 0.52f, 0.25f, 1.0f); // Bronze
 		
 		TextRender()->TextColor(TextColor);
 
-		// Render rank with medal emojis
+		// Simple rank rendering without medals - just numbers
 		char aRankText[16];
-		if(pRecord->m_Rank == 1)
-			str_format(aRankText, sizeof(aRankText), "🥇 %d", pRecord->m_Rank);
-		else if(pRecord->m_Rank == 2)
-			str_format(aRankText, sizeof(aRankText), "🥈 %d", pRecord->m_Rank);
-		else if(pRecord->m_Rank == 3)
-			str_format(aRankText, sizeof(aRankText), "🥉 %d", pRecord->m_Rank);
-		else
-			str_format(aRankText, sizeof(aRankText), "%d", pRecord->m_Rank);
-		
+		str_format(aRankText, sizeof(aRankText), "%d.", pRecord->m_Rank);
 		TextRender()->Text(RankOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, aRankText);
 
-		// EXACT name rendering from scoreboard with ellipsis
+		// Name rendering with ellipsis
 		{
 			CTextCursor Cursor;
 			TextRender()->SetCursor(&Cursor, NameOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, TEXTFLAG_RENDER | TEXTFLAG_ELLIPSIS_AT_END);
@@ -161,12 +139,12 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 			TextRender()->TextEx(&Cursor, pRecord->m_aPlayerName);
 		}
 
-		// Format and render time (right-aligned like ping in scoreboard)
+		// Format and render time (right-aligned)
 		char aFormattedTime[32];
 		GameClient()->m_MapTimes.FormatTime(aFormattedTime, sizeof(aFormattedTime), pRecord->m_aTime);
 		TextRender()->Text(TimeOffset + TimeLength - TextRender()->TextWidth(FontSize, aFormattedTime), Row.y + (Row.h - FontSize) / 2.0f, FontSize, aFormattedTime);
 
-		// Reset text color EXACTLY like scoreboard
+		// Reset text color to default
 		TextRender()->TextColor(TextRender()->DefaultTextColor());
 	}
 }
@@ -184,9 +162,9 @@ void CMapTimesMenu::OnRender()
 	const float Width = Height * Graphics()->ScreenAspect();
 	Graphics()->MapScreen(0, 0, Width, Height);
 
-	// Use reasonable size for Map Times (smaller than full scoreboard)
-	const float ScoreboardWidth = 750.0f;
-	const float ScoreboardHeight = 500.0f;
+	// Configurable size for Map Times (adjustable via console)
+	const float ScoreboardWidth = (float)g_Config.m_ClMapTimesMenuWidth;
+	const float ScoreboardHeight = (float)g_Config.m_ClMapTimesMenuHeight;
 	const float TitleHeight = 60.0f;
 
 	CUIRect Scoreboard = {(Width - ScoreboardWidth) / 2.0f, 150.0f, ScoreboardWidth, ScoreboardHeight + TitleHeight};
@@ -228,7 +206,8 @@ bool CMapTimesMenu::OnInput(const IInput::CEvent &Event)
 		SetActive(false);
 		return true;
 	}
-	return IsActive();
+	// Allow other inputs to pass through when leaderboard is open
+	return false;
 }
 
 void CMapTimesMenu::Toggle()

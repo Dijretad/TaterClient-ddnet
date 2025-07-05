@@ -130,7 +130,6 @@ void CGameClient::OnConsoleInit()
 					      &m_Rainbow,
 					      &m_MapSounds,
 					      &m_MapTimes,
-					      &m_MapTimesMenu,
 					      &m_Background, // render instead of m_MapLayersBackground when g_Config.m_ClOverlayEntities == 100
 					      &m_MapLayersBackground, // first to render
 					      &m_BgDraw,
@@ -167,6 +166,7 @@ void CGameClient::OnConsoleInit()
 					      &m_TouchControls,
 					      &m_Scoreboard,
 					      &m_Statboard,
+					      &m_MapTimesMenu, // Map times menu - render on top
 					      &m_Motd,
 					      &m_Menus,
 					      &m_Tooltips,

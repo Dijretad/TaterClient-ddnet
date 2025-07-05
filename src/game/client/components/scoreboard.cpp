@@ -668,8 +668,7 @@ void CScoreboard::OnRender()
 	const float Width = Height * Graphics()->ScreenAspect();
 	Graphics()->MapScreen(0, 0, Width, Height);
 
-	// Render map times widget in top-left when scoreboard is active (after MapScreen setup)
-	GameClient()->m_MapTimes.RenderMapTimesTab(30.0f, 50.0f);
+	// Map times widget has been moved to dedicated menu (accessible with configurable key)
 
 	const CNetObj_GameInfo *pGameInfoObj = GameClient()->m_Snap.m_pGameInfoObj;
 	const bool Teams = GameClient()->IsTeamPlay();

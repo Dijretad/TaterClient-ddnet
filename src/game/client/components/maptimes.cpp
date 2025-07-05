@@ -12,6 +12,7 @@
 #include <engine/textrender.h>
 #include <game/client/gameclient.h>
 #include <game/client/ui.h>
+#include <game/client/components/chat.h>
 
 CMapTimes::CMapTimes()
 {
@@ -26,6 +27,9 @@ CMapTimes::CMapTimes()
 void CMapTimes::OnInit()
 {
 	ResetTextContainers();
+	
+	// Register console command
+	Console()->Register("show_top_10", "", CFGFLAG_CLIENT, ConShowTop10, this, "Show top 10 records for current map in chat");
 }
 
 void CMapTimes::OnReset()
@@ -430,6 +434,69 @@ void CMapTimes::FormatTime(char *pBuffer, int BufferSize, const char *pTimeStrin
 	str_copy(pBuffer, pTimeString, TotalLength + 1);
 }
 
+void CMapTimes::ShowTop10InChat()
+{
+	if(!HasValidData())
+	{
+		GameClient()->m_Chat.AddLine(CChat::TYPE_ALL, 0, "No map times data available. Wait for the data to load or ensure you're on a valid map.");
+		return;
+	}
+	
+	// Header message
+	char aHeaderMsg[128];
+	str_format(aHeaderMsg, sizeof(aHeaderMsg), "=== Top %d Records for %s ===", m_NumRecords, m_aCurrentMap);
+	GameClient()->m_Chat.AddLine(CChat::TYPE_ALL, 0, aHeaderMsg);
+	
+	// Display each record
+	for(int i = 0; i < m_NumRecords; i++)
+	{
+		const SMapTimeRecord &Record = m_aTopRecords[i];
+		
+		// Format time to show only 2 decimal places
+		char aFormattedTime[32];
+		FormatTime(aFormattedTime, sizeof(aFormattedTime), Record.m_aTime);
+		
+		// Create the message line
+		char aRecordMsg[256];
+		str_format(aRecordMsg, sizeof(aRecordMsg), "%d. %s - %s", i + 1, Record.m_aPlayerName, aFormattedTime);
+		
+		// Add medal emojis for top 3
+		char aFinalMsg[256];
+		if(i == 0)
+			str_format(aFinalMsg, sizeof(aFinalMsg), "🥇 %s", aRecordMsg);
+		else if(i == 1)
+			str_format(aFinalMsg, sizeof(aFinalMsg), "🥈 %s", aRecordMsg);
+		else if(i == 2)
+			str_format(aFinalMsg, sizeof(aFinalMsg), "🥉 %s", aRecordMsg);
+		else
+			str_copy(aFinalMsg, aRecordMsg, sizeof(aFinalMsg));
+		
+		GameClient()->m_Chat.AddLine(CChat::TYPE_ALL, 0, aFinalMsg);
+	}
+	
+	// Footer message
+	GameClient()->m_Chat.AddLine(CChat::TYPE_ALL, 0, "=========================");
+}
+
+void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)
+{
+	CMapTimes *pMapTimes = (CMapTimes *)pUser;
+	
+	// If no data available, try to request it first
+	if(!pMapTimes->HasValidData())
+	{
+		const char *pCurrentMap = pMapTimes->Client()->GetCurrentMap();
+		if(pCurrentMap && pCurrentMap[0] != '\0')
+		{
+			pMapTimes->GameClient()->m_Chat.AddLine(CChat::TYPE_ALL, 0, "Requesting map times data... Please wait and try again in a few seconds.");
+			pMapTimes->RequestMapTimes(pCurrentMap);
+			return;
+		}
+	}
+	
+	pMapTimes->ShowTop10InChat();
+}
+
 void CMapTimes::OnRender()
 {
 	Update();
@@ -443,4 +510,92 @@ void CMapTimes::OnRender()
 			OnMapLoad();
 		}
 	}
+}
+
+void CMapTimes::RenderMapTimesFullscreen(float x, float y)
+{
+	if(!HasValidData())
+	{
+		// Show loading or error message
+		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+		TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+		
+		const char *pMessage = "Loading map records...";
+		if(m_State == STATE_ERROR)
+			pMessage = "Failed to load map records.";
+			
+		float MessageWidth = TextRender()->TextWidth(24.0f, pMessage, -1, -1.0f);
+		float MessageX = Graphics()->ScreenWidth() / 2.0f - MessageWidth / 2.0f;
+		float MessageY = Graphics()->ScreenHeight() / 2.0f;
+		
+		TextRender()->Text(MessageX, MessageY, 24.0f, pMessage);
+		return;
+	}
+
+	// Use larger font size for fullscreen view
+	const float BaseFontSize = 16.0f;
+	const float FontSize = BaseFontSize * (g_Config.m_ClMapTimesTextSize / 100.0f);
+	const float LineHeight = FontSize + 8.0f;
+	const float HeaderHeight = FontSize + 15.0f;
+	
+	// Larger background for fullscreen
+	float Width = 600.0f;
+	float Height = HeaderHeight + (m_NumRecords * LineHeight) + 20.0f;
+	
+	// Background with border
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.8f);
+	IGraphics::CQuadItem BackgroundQuad(x, y, Width, Height);
+	Graphics()->QuadsBegin();
+	Graphics()->QuadsDraw(&BackgroundQuad, 1);
+	Graphics()->QuadsEnd();
+	
+	// Border
+	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 0.3f);
+	IGraphics::CQuadItem BorderQuad(x-2, y-2, Width+4, Height+4);
+	Graphics()->QuadsBegin();
+	Graphics()->QuadsDraw(&BorderQuad, 1);
+	Graphics()->QuadsEnd();
+	
+	// Header
+	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	char aHeader[128];
+	str_format(aHeader, sizeof(aHeader), "🏆 Top %d Records - %s", m_NumRecords, m_aCurrentMap);
+	
+	float HeaderWidth = TextRender()->TextWidth(FontSize + 4.0f, aHeader, -1, -1.0f);
+	float HeaderX = x + (Width - HeaderWidth) / 2.0f; // Center the header
+	
+	TextRender()->Text(HeaderX, y + 10.0f, FontSize + 4.0f, aHeader);
+	
+	// Records
+	for(int i = 0; i < m_NumRecords; i++)
+	{
+		const SMapTimeRecord &Record = m_aTopRecords[i];
+		float RecordY = y + HeaderHeight + (i * LineHeight);
+		
+		// Rank color with more distinct colors
+		if(i == 0)
+			TextRender()->TextColor(1.0f, 0.8f, 0.0f, 1.0f); // Gold
+		else if(i == 1)
+			TextRender()->TextColor(0.9f, 0.9f, 0.9f, 1.0f); // Silver
+		else if(i == 2)
+			TextRender()->TextColor(0.9f, 0.6f, 0.2f, 1.0f); // Bronze
+		else if(i < 5)
+			TextRender()->TextColor(0.6f, 1.0f, 0.6f, 1.0f); // Light green for top 5
+		else
+			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // White
+		
+		// Format time to show only 2 decimal places
+		char aFormattedTime[32];
+		FormatTime(aFormattedTime, sizeof(aFormattedTime), Record.m_aTime);
+		
+		// Format with padding for alignment: "1.  PlayerName        - 1:23.45"
+		char aLine[256];
+		str_format(aLine, sizeof(aLine), "%2d. %-20s - %s", i + 1, Record.m_aPlayerName, aFormattedTime);
+		
+		TextRender()->Text(x + 20.0f, RecordY, FontSize, aLine);
+	}
+	
+	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
 }

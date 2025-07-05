@@ -68,6 +68,31 @@ Vous pouvez ajuster la taille du texte avec :
   - 100 = taille double
   - 25 = taille très petite
 
+### Commande console pour afficher le top 10
+
+Une nouvelle commande permet d'afficher le top 10 directement dans le chat :
+- **Commande** : `show_top_10`
+- **Fonctionnement** : Affiche les 10 meilleurs temps dans le chat du jeu
+- **Emojis** : 🥇🥈🥉 pour le podium
+- **Format** : "1. PlayerName - 00:06:12.45"
+
+**Exemple d'utilisation :**
+```
+show_top_10
+```
+
+**Résultat dans le chat :**
+```
+=== Top 10 Records for dm1 ===
+🥇 1. GreeN - 00:06:12.45
+🥈 2. speedrunner - 00:06:14.23  
+🥉 3. FastTee - 00:06:15.67
+4. RocketPlayer - 00:06:18.91
+5. QuickShot - 00:06:21.34
+... (jusqu'au 10ème)
+=========================
+```
+
 ## Position et style
 
 - **Position** : Haut-gauche du menu Tab/scoreboard (30px, 50px)
@@ -112,9 +137,18 @@ Vous pouvez ajuster la taille du texte avec :
 ## Améliorations récentes
 
 ### Version actuelle
+- **Menu dédié** : Le widget est maintenant accessible via un menu fullscreen avec une touche configurable
+- **Touche configurable** : Variable `cl_map_times_key` pour définir la touche d'ouverture (défaut : T=84)
+- **Plus d'affichage dans Tab** : Le widget n'apparaît plus dans le menu Tab/scoreboard
 - **Police plus petite** : Taille de base réduite de moitié pour une meilleure intégration
 - **Taille configurable** : Variable `cl_map_times_text_size` pour ajuster la taille du texte
 - **Format de temps optimisé** : Affichage avec seulement 2 décimales (ex: 00:06:12.82)
-- **Correction crosshair** : Le crosshair n'apparaît plus derrière le widget dans le menu Tab
+- **Interface améliorée** : Menu fullscreen avec fond sombre et bordures
 - **Top 10** : Passage de 5 à 10 records affichés
-- **Affichage conditionnel** : Widget visible uniquement dans le menu Tab/scoreboard
+- **Commande console** : `show_top_10` pour afficher dans le chat
+
+### Interface du menu dédié
+- **Ouverture** : Appuyez sur la touche configurée (défaut: T)
+- **Fermeture** : ESC ou touche configurée
+- **Position** : Centre de l'écran avec fond semi-transparent
+- **Style** : Interface moderne avec bordures et couleurs du podium

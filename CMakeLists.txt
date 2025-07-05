@@ -2462,6 +2462,8 @@ if(CLIENT)
     components/mapsounds.h
     components/maptimes.cpp
     components/maptimes.h
+    components/maptimes_menu.cpp
+    components/maptimes_menu.h
     components/menu_background.cpp
     components/menu_background.h
     components/menus.cpp

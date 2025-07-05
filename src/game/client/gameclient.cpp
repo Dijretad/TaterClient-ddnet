@@ -130,6 +130,7 @@ void CGameClient::OnConsoleInit()
 					      &m_Rainbow,
 					      &m_MapSounds,
 					      &m_MapTimes,
+					      &m_MapTimesMenu,
 					      &m_Background, // render instead of m_MapLayersBackground when g_Config.m_ClOverlayEntities == 100
 					      &m_MapLayersBackground, // first to render
 					      &m_BgDraw,
@@ -180,6 +181,7 @@ void CGameClient::OnConsoleInit()
 						  &m_GameConsole,
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
 						  &m_Motd, // for pressing esc to remove it
+						  &m_MapTimesMenu, // Map times menu
 						  &m_Spectator,
 						  &m_BindWheel,
 						  &m_Emoticon,

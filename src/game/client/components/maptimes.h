@@ -65,7 +65,12 @@ public:
 	void Update();
 	void RenderMapTimes(float x, float y, float w, float h);
 	void RenderMapTimesTab(float x, float y); // Nouveau rendu pour le menu Tab
+	void RenderMapTimesFullscreen(float x, float y); // Nouveau rendu fullscreen
 	bool HasValidData() const { return m_State == STATE_DONE && m_NumRecords > 0; }
+	
+	// Command functions
+	void ShowTop10InChat();
+	static void ConShowTop10(IConsole::IResult *pResult, void *pUser);
 };
 
 #endif

@@ -47,6 +47,7 @@
 #include "components/maplayers.h"
 #include "components/mapsounds.h"
 #include "components/maptimes.h"
+#include "components/maptimes_menu.h"
 #include "components/menu_background.h"
 #include "components/menus.h"
 #include "components/motd.h"
@@ -192,6 +193,7 @@ public:
 
 	CMapSounds m_MapSounds;
 	CMapTimes m_MapTimes;
+	CMapTimesMenu m_MapTimesMenu;
 
 	CRaceDemo m_RaceDemo;
 	CGhost m_Ghost;

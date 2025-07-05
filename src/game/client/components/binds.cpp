@@ -520,6 +520,7 @@ void CBinds::SetDDRaceBinds(bool FreeOnly)
 		Bind(KEY_MOUSE_3, "+spectate", FreeOnly);
 		Bind(KEY_MINUS, "spectate_previous", FreeOnly);
 		Bind(KEY_EQUALS, "spectate_next", FreeOnly);
+		Bind(KEY_T, "+map_times", FreeOnly);
 	}
 
 	g_Config.m_ClDDRaceBindsSet = 1;

@@ -2,30 +2,46 @@
 
 ## Vue d'ensemble
 
-Cette fonctionnalité ajoute un widget qui affiche les **10 meilleurs temps** d'une carte DDNet en temps réel depuis l'API de https://www.ravenkog.com. Le widget s'affiche **en haut à gauche** quand le **menu Tab (scoreboard)** est ouvert.
+Cette fonctionnalité ajoute un widget qui affiche les **10 meilleurs temps** d'une carte DDNet en temps réel depuis l'API de https://www.ravenkog.com. Le widget est disponible dans un **menu dédié** accessible via une touche configurable.
 
 ## Fonctionnalités
 
-- **Affichage dans le menu Tab** : Récupère automatiquement les temps records depuis l'API lorsque vous ouvrez le scoreboard
+- **Menu dédié fullscreen** : Menu plein écran centré avec fond semi-transparent
+- **Affichage par maintien de touche** : Le menu s'affiche tant que la touche est maintenue enfoncée
 - **Top 10** : Affiche les 10 meilleurs temps avec les noms des joueurs
-- **Position optimisée** : Widget positionné en haut à gauche du menu Tab/scoreboard
 - **Style visuel attrayant** : Différentes couleurs pour le podium (or, argent, bronze)
-- **Configuration** : Peut être activé/désactivé via les paramètres HUD
+- **Commande console** : Affichage des top 10 dans le chat via la commande `show_top_10`
+- **Configuration complète** : Touche configurable via le menu des binds standard
+- **Taille de police configurable** : Variable `cl_map_times_text_size`
+
+## Configuration
+
+### Touche d'accès
+- **Bind par défaut** : Touche `T`
+- **Configuration** : Menu Settings > Controls > "Map Times"
+- **Commande console** : `bind <key> +map_times`
+
+### Variables de configuration
+- `cl_map_times_text_size` : Taille du texte (10-200%, défaut: 50%)
+
+### Commandes console
+- `show_top_10` : Affiche le top 10 dans le chat
+- `+map_times` : Commande bind pour ouvrir/fermer le menu (maintien de touche)
 
 ## Structure des fichiers
 
 ### Nouveaux fichiers créés :
 - `src/game/client/components/maptimes.h` - Header du composant
 - `src/game/client/components/maptimes.cpp` - Implémentation du composant
+- `src/game/client/components/maptimes_menu.h` - Header du menu dédié
+- `src/game/client/components/maptimes_menu.cpp` - Implémentation du menu dédié
 
 ### Fichiers modifiés :
-- `src/game/client/components/hud.h` - Ajout de la déclaration RenderMapTimesHud()
-- `src/game/client/components/hud.cpp` - Ajout de l'appel de rendu
-- `src/game/client/gameclient.h` - Ajout du composant MapTimes
-- `src/game/client/gameclient.cpp` - Initialisation du composant
-- `src/engine/shared/config_variables.h` - Ajout de la variable ClShowhudMapTimes
-- `src/game/client/components/menus_settings.cpp` - Option dans les paramètres
-- `data/languages/french.txt` - Traduction française
+- `src/game/client/gameclient.h` - Ajout du composant MapTimesMenu
+- `src/game/client/gameclient.cpp` - Initialisation du composant et gestion input
+- `src/engine/shared/config_variables.h` - Variables de configuration
+- `src/game/client/components/menus_settings.cpp` - Ajout du bind dans les contrôles
+- `src/game/client/components/binds.cpp` - Bind par défaut pour +map_times
 - `CMakeLists.txt` - Ajout des fichiers sources
 
 ## API utilisée
@@ -68,15 +84,14 @@ Vous pouvez ajuster la taille du texte avec :
   - 100 = taille double
   - 25 = taille très petite
 
-### Commande console pour afficher le top 10
+## Utilisation
 
-Une nouvelle commande permet d'afficher le top 10 directement dans le chat :
-- **Commande** : `show_top_10`
-- **Fonctionnement** : Affiche les 10 meilleurs temps dans le chat du jeu
-- **Emojis** : 🥇🥈🥉 pour le podium
-- **Format** : "1. PlayerName - 00:06:12.45"
+### Menu dédié Map Times
+1. **Ouverture** : Maintenez la touche configurée (défaut: `T`)
+2. **Affichage** : Le menu reste ouvert tant que la touche est maintenue
+3. **Fermeture** : Relâchez la touche ou appuyez sur `ESC`
 
-**Exemple d'utilisation :**
+### Commande console
 ```
 show_top_10
 ```
@@ -95,11 +110,10 @@ show_top_10
 
 ## Position et style
 
-- **Position** : Haut-gauche du menu Tab/scoreboard (30px, 50px)
+- **Menu fullscreen** : Centre de l'écran avec fond semi-transparent
 - **Taille** : Adaptative selon le contenu et la configuration
-- **Taille de police** : Configurable via `cl_map_times_text_size` (défaut : 50% = police plus petite)
-- **Arrière-plan** : Noir semi-transparent (60% d'opacité)
-- **Coins arrondis** : 5px
+- **Taille de police** : Configurable via `cl_map_times_text_size` (défaut : 50%)
+- **Arrière-plan** : Noir semi-transparent
 - **Format des temps** : HH:MM:SS.XX (2 décimales seulement)
 - **Couleurs du texte** :
   - 1er place : Or (#FFD700)
@@ -113,42 +127,24 @@ show_top_10
 2. **Requête HTTP** : Une requête est envoyée à l'API avec le nom de la carte
 3. **Parsing JSON** : Les données JSON sont analysées pour extraire les top 10
 4. **Mise en cache** : Les résultats sont mis en cache pour éviter les requêtes répétées
-5. **Rendu conditionnel** : Le widget est rendu uniquement quand le menu Tab est ouvert
-
-## Gestion d'erreurs
-
-- **Cooldown** : 10 secondes entre les requêtes pour éviter le spam
-- **Timeout** : 10 secondes de timeout pour les requêtes HTTP
-- **Fallback** : Le widget ne s'affiche pas si aucune donnée n'est disponible
-- **Logging** : Logs de débogage pour le troubleshooting
-
-## Performance
-
-- **Requêtes asynchrones** : N'bloque pas le jeu
-- **Conteneurs de texte** : Optimisation du rendu via les text containers
-- **Mise à jour conditionnelle** : Re-rendu uniquement si nécessaire
-
-## Compatibilité
-
-- Compatible avec toutes les cartes DDNet ayant des données sur l'API
-- Fonctionne avec le système de configuration existant
-- Respect du style visuel de TaterClient
+5. **Commande bind** : Le menu est contrôlé par le système de binds standard du client (+map_times)
 
 ## Améliorations récentes
 
-### Version actuelle
-- **Menu dédié** : Le widget est maintenant accessible via un menu fullscreen avec une touche configurable
-- **Touche configurable** : Variable `cl_map_times_key` pour définir la touche d'ouverture (défaut : T=84)
-- **Plus d'affichage dans Tab** : Le widget n'apparaît plus dans le menu Tab/scoreboard
-- **Police plus petite** : Taille de base réduite de moitié pour une meilleure intégration
-- **Taille configurable** : Variable `cl_map_times_text_size` pour ajuster la taille du texte
-- **Format de temps optimisé** : Affichage avec seulement 2 décimales (ex: 00:06:12.82)
-- **Interface améliorée** : Menu fullscreen avec fond sombre et bordures
-- **Top 10** : Passage de 5 à 10 records affichés
+### Version actuelle - Système de binds intégré
+- **Bind standard** : Utilise le système de binds du client (+map_times)
+- **Maintien de touche** : Le menu s'affiche tant que la touche est maintenue
+- **Configuration via menu** : Touche configurable dans Settings > Controls > "Map Times"
+- **Bind par défaut** : Touche T configurée automatiquement
+- **Plus de variable custom** : Suppression de cl_map_times_key au profit du système standard
+- **Top 10** : Affichage de 10 records (au lieu de 5)
+- **Menu dédié fullscreen** : Interface moderne centrée
 - **Commande console** : `show_top_10` pour afficher dans le chat
+- **Taille configurable** : Variable `cl_map_times_text_size` (10-200%)
 
 ### Interface du menu dédié
-- **Ouverture** : Appuyez sur la touche configurée (défaut: T)
-- **Fermeture** : ESC ou touche configurée
+- **Ouverture** : Maintenez la touche configurée (défaut: T)
+- **Fermeture automatique** : Dès que vous relâchez la touche
+- **Fermeture manuelle** : Touche ESC
 - **Position** : Centre de l'écran avec fond semi-transparent
-- **Style** : Interface moderne avec bordures et couleurs du podium
+- **Style** : Interface moderne avec couleurs du podium

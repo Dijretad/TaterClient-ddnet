@@ -9,6 +9,8 @@
 #include <game/client/component.h>
 #include <memory>
 
+class IConsole;
+
 struct SMapTimeRecord
 {
 	char m_aPlayerName[MAX_NAME_LENGTH];
@@ -71,6 +73,7 @@ public:
 	// Command functions
 	void ShowTop10InChat();
 	static void ConShowTop10(IConsole::IResult *pResult, void *pUser);
+	static void ConKeyMapTimes(IConsole::IResult *pResult, void *pUserData);
 };
 
 #endif

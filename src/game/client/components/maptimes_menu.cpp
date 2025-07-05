@@ -53,7 +53,7 @@ void CMapTimesMenu::OnRender()
 	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
 	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 0.7f);
 	
-	const char *pInstructions = "Press ESC or assigned key to close";
+	const char *pInstructions = "Press ESC or release assigned key to close";
 	float InstructionsWidth = TextRender()->TextWidth(16.0f, pInstructions, -1, -1.0f);
 	float InstructionsX = Graphics()->ScreenWidth() / 2.0f - InstructionsWidth / 2.0f;
 	float InstructionsY = Graphics()->ScreenHeight() - 50.0f;
@@ -76,35 +76,15 @@ bool CMapTimesMenu::OnCursorMove(float x, float y, IInput::ECursorType CursorTyp
 
 bool CMapTimesMenu::OnInput(const IInput::CEvent &Event)
 {
-	// Check for map times key press when menu is closed
-	if(!IsActive() && Event.m_Flags & IInput::FLAG_PRESS && Event.m_Key == g_Config.m_ClMapTimesKey)
+	// Don't handle direct input anymore - control is now via console command (+map_times)
+	// Only handle ESC key to close the menu
+	if(IsActive() && Event.m_Flags & IInput::FLAG_PRESS && Event.m_Key == KEY_ESCAPE)
 	{
-		SetActive(true);
+		SetActive(false);
 		return true;
 	}
-	
-	// Handle input when menu is active
-	if(!IsActive())
-		return false;
 
-	if(Event.m_Flags & IInput::FLAG_PRESS)
-	{
-		// Close with ESC
-		if(Event.m_Key == KEY_ESCAPE)
-		{
-			SetActive(false);
-			return true;
-		}
-		
-		// Close with assigned map times key
-		if(Event.m_Key == g_Config.m_ClMapTimesKey)
-		{
-			SetActive(false);
-			return true;
-		}
-	}
-
-	return true; // Consume all input when active
+	return IsActive(); // Consume all input when active, but don't process keys for opening
 }
 
 void CMapTimesMenu::Toggle()

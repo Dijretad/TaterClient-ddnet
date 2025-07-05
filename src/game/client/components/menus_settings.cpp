@@ -946,6 +946,7 @@ static CKeyInfo gs_aKeys[] =
 		{Localizable("Screenshot"), "screenshot", 0, 0},
 		{Localizable("Scoreboard"), "+scoreboard", 0, 0},
 		{Localizable("Statboard"), "+statboard", 0, 0},
+		{Localizable("Map Times"), "+map_times", 0, 0},
 		{Localizable("Lock team"), "say /lock", 0, 0},
 		{Localizable("Show entities"), "toggle cl_overlay_entities 0 100", 0, 0},
 		{Localizable("Show HUD"), "toggle cl_showhud 0 1", 0, 0},

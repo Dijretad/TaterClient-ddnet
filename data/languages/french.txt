@@ -816,6 +816,9 @@ Markers
 HUD
 == Interface
 
+Map Times Widget
+== Widget des Records de Cartes
+
 Refresh Rate
 == Taux de rafraîchissement
 

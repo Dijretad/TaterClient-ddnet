@@ -11,6 +11,7 @@
 
 #include <game/client/animstate.h>
 #include <game/client/components/countryflags.h>
+#include <game/client/components/maptimes.h>
 #include <game/client/components/motd.h>
 #include <game/client/components/statboard.h>
 #include <game/client/gameclient.h>
@@ -658,6 +659,9 @@ void CScoreboard::OnRender()
 
 	if(!IsActive())
 		return;
+
+	// Render map times widget in top-left when scoreboard is active
+	GameClient()->m_MapTimes.RenderMapTimesTab(30.0f, 50.0f);
 
 	// if the score board is active, then we should clear the motd message as well
 	if(GameClient()->m_Motd.IsActive())

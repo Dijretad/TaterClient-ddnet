@@ -123,7 +123,7 @@ void CMapTimes::ParseResponse(const char *pJson)
 		return;
 	}
 	
-	// Parse the first 5 records
+	// Parse the first 10 records
 	int RecordCount = minimum((int)pTop100->u.array.length, (int)MAX_TOP_RECORDS);
 	for(int i = 0; i < RecordCount; i++)
 	{
@@ -339,6 +339,60 @@ void CMapTimes::RenderMapTimes(float x, float y, float w, float h)
 		
 		CurrentY += RowHeight;
 	}
+}
+
+void CMapTimes::RenderMapTimesTab(float x, float y)
+{
+	if(!g_Config.m_ClShowhudMapTimes || !HasValidData())
+		return;
+
+	const float FontSize = 12.0f;
+	const float LineHeight = 16.0f;
+	const float HeaderHeight = 20.0f;
+	
+	// Background
+	float Width = 250.0f;
+	float Height = HeaderHeight + (m_NumRecords * LineHeight) + 10.0f;
+	
+	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.6f);
+	IGraphics::CQuadItem Quad(x, y, Width, Height);
+	Graphics()->QuadsBegin();
+	Graphics()->QuadsDraw(&Quad, 1);
+	Graphics()->QuadsEnd();
+	
+	// Header
+	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
+	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	char aHeader[64];
+	str_format(aHeader, sizeof(aHeader), "Top %d Records - %s", m_NumRecords, m_aCurrentMap);
+	
+	TextRender()->Text(x + 5.0f, y + 5.0f, FontSize + 2.0f, aHeader);
+	
+	// Records
+	for(int i = 0; i < m_NumRecords; i++)
+	{
+		const SMapTimeRecord &Record = m_aTopRecords[i];
+		float RecordY = y + HeaderHeight + (i * LineHeight);
+		
+		// Rank color
+		if(i == 0)
+			TextRender()->TextColor(1.0f, 0.8f, 0.0f, 1.0f); // Gold
+		else if(i == 1)
+			TextRender()->TextColor(0.8f, 0.8f, 0.8f, 1.0f); // Silver
+		else if(i == 2)
+			TextRender()->TextColor(0.8f, 0.5f, 0.2f, 1.0f); // Bronze
+		else
+			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // White
+		
+		// Format: "1. PlayerName - 1:23.45"
+		char aLine[128];
+		str_format(aLine, sizeof(aLine), "%d. %s - %s", i + 1, Record.m_aPlayerName, Record.m_aTime);
+		
+		TextRender()->Text(x + 10.0f, RecordY, FontSize, aLine);
+	}
+	
+	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
 }
 
 void CMapTimes::OnRender()

@@ -27,7 +27,7 @@ class CMapTimes : public CComponent
 {
 	enum
 	{
-		MAX_TOP_RECORDS = 5,
+		MAX_TOP_RECORDS = 10,
 		STATE_IDLE,
 		STATE_LOADING,
 		STATE_DONE,
@@ -63,6 +63,7 @@ public:
 	
 	void Update();
 	void RenderMapTimes(float x, float y, float w, float h);
+	void RenderMapTimesTab(float x, float y); // Nouveau rendu pour le menu Tab
 	bool HasValidData() const { return m_State == STATE_DONE && m_NumRecords > 0; }
 };
 

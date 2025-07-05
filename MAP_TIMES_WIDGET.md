@@ -2,13 +2,13 @@
 
 ## Vue d'ensemble
 
-Cette fonctionnalité ajoute un widget HUD qui affiche les 5 meilleurs temps d'une carte DDNet en temps réel depuis l'API de https://www.ravenkog.com.
+Cette fonctionnalité ajoute un widget qui affiche les **10 meilleurs temps** d'une carte DDNet en temps réel depuis l'API de https://www.ravenkog.com. Le widget s'affiche **en haut à gauche** quand le **menu Tab (scoreboard)** est ouvert.
 
 ## Fonctionnalités
 
-- **Affichage en temps réel** : Récupère automatiquement les temps records depuis l'API lorsque vous rejoignez un serveur
-- **Top 5** : Affiche les 5 meilleurs temps avec les noms des joueurs
-- **Position optimisée** : Widget positionné en bas à droite de l'écran
+- **Affichage dans le menu Tab** : Récupère automatiquement les temps records depuis l'API lorsque vous ouvrez le scoreboard
+- **Top 10** : Affiche les 10 meilleurs temps avec les noms des joueurs
+- **Position optimisée** : Widget positionné en haut à gauche du menu Tab/scoreboard
 - **Style visuel attrayant** : Différentes couleurs pour le podium (or, argent, bronze)
 - **Configuration** : Peut être activé/désactivé via les paramètres HUD
 

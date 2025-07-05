@@ -120,12 +120,8 @@ void CMapTimesMenu::RenderEntry(CUIRect Entry, int Rank, const char *pName, cons
 	// Draw entry background with rounded corners (like scoreboard)
 	Graphics()->SetColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
 	Graphics()->QuadsBegin();
-	Graphics()->SetColorVertex(0, BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
-	Graphics()->SetColorVertex(1, BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
-	Graphics()->SetColorVertex(2, BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
-	Graphics()->SetColorVertex(3, BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
 	IGraphics::CQuadItem EntryQuad(Entry.x + 2.0f, Entry.y + State.m_Spacing / 2.0f, Entry.w - 4.0f, Entry.h - State.m_Spacing);
-	Graphics()->QuadsDrawTL(&EntryQuad, 1);
+	Graphics()->QuadsDraw(&EntryQuad, 1);
 	Graphics()->QuadsEnd();
 	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
@@ -166,8 +162,8 @@ void CMapTimesMenu::RenderEntry(CUIRect Entry, int Rank, const char *pName, cons
 	TextRender()->Text(NameX, TextY, State.m_FontSize, pName, NameMaxWidth);
 	
 	// Render time (right aligned)
-	float TimeWidth = TextRender()->TextWidth(State.m_FontSize, pTime, -1, -1.0f);
-	float TimeX = Entry.x + Entry.w - TimeWidth - Padding;
+	float TimeTextWidth = TextRender()->TextWidth(State.m_FontSize, pTime, -1, -1.0f);
+	float TimeX = Entry.x + Entry.w - TimeTextWidth - Padding;
 	TextRender()->Text(TimeX, TextY, State.m_FontSize, pTime);
 	
 	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);

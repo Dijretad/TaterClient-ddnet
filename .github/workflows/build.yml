@@ -20,14 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Default: Windows only. Full build: add [ci full] to commit message
-        os: ${{ contains(github.event.head_commit.message, '[ci full]') && fromJSON('["ubuntu-latest", "macOS-latest", "windows-latest", "ubuntu-22.04"]') || fromJSON('["windows-latest"]') }}
+        os: ["ubuntu-latest", "macOS-latest", "windows-latest", "ubuntu-22.04"]
         include:
-        - os: windows-latest
-          cmake-args: -A x64 -DEXCEPTION_HANDLING=ON
-          cmake-init-env: CXXFLAGS=/WX LDFLAGS=/WX
-          package-file: "*-win64.zip"
-          fancy: false
         - os: ubuntu-latest
           cmake-args: -G Ninja
           cmake-init-env: CXXFLAGS=-Werror
@@ -45,15 +39,13 @@ jobs:
           cmake-init-env: CXXFLAGS=-Werror
           package-file: "*-macos.dmg"
           fancy: false
-        exclude:
-        - ${{ !contains(github.event.head_commit.message, '[ci full]') && { os: 'ubuntu-latest' } || {} }}
-        - ${{ !contains(github.event.head_commit.message, '[ci full]') && { os: 'ubuntu-22.04' } || {} }}
-        - ${{ !contains(github.event.head_commit.message, '[ci full]') && { os: 'macOS-latest' } || {} }}
+        - os: windows-latest
           cmake-args: -A x64 -DEXCEPTION_HANDLING=ON
           cmake-init-env: CXXFLAGS=/WX LDFLAGS=/WX
           package-file: "*-win64.zip"
           fancy: false
 
+    steps:
     steps:
     - uses: actions/checkout@v4
       with:

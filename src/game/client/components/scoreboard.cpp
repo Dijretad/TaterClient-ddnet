@@ -660,9 +660,6 @@ void CScoreboard::OnRender()
 	if(!IsActive())
 		return;
 
-	// Render map times widget in top-left when scoreboard is active
-	GameClient()->m_MapTimes.RenderMapTimesTab(30.0f, 50.0f);
-
 	// if the score board is active, then we should clear the motd message as well
 	if(GameClient()->m_Motd.IsActive())
 		GameClient()->m_Motd.Clear();
@@ -670,6 +667,9 @@ void CScoreboard::OnRender()
 	const float Height = 400.0f * 3.0f;
 	const float Width = Height * Graphics()->ScreenAspect();
 	Graphics()->MapScreen(0, 0, Width, Height);
+
+	// Render map times widget in top-left when scoreboard is active (after MapScreen setup)
+	GameClient()->m_MapTimes.RenderMapTimesTab(30.0f, 50.0f);
 
 	const CNetObj_GameInfo *pGameInfoObj = GameClient()->m_Snap.m_pGameInfoObj;
 	const bool Teams = GameClient()->IsTeamPlay();

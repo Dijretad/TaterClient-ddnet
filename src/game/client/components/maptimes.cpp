@@ -356,9 +356,7 @@ void CMapTimes::RenderMapTimesTab(float x, float y)
 	float Width = 250.0f;
 	float Height = HeaderHeight + (m_NumRecords * LineHeight) + 10.0f;
 	
-	// Disable crosshair rendering to prevent it from appearing behind text
-	Graphics()->MapScreen(0, 0, Graphics()->ScreenWidth(), Graphics()->ScreenHeight());
-	
+	// Use the current graphics context (scoreboard has already set up MapScreen)
 	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.6f);
 	IGraphics::CQuadItem Quad(x, y, Width, Height);
 	Graphics()->QuadsBegin();

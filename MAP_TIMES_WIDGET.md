@@ -57,28 +57,28 @@ L'API utilisée est : `https://www.ravenkog.com/api/maps?mapName={MAP_NAME}`
 ## Configuration
 
 La fonctionnalité peut être activée/désactivée via :
-- **Menu** : Settings → Appearance → HUD → "Show map times (top 5)"
+- **Menu** : Settings → Appearance → HUD → "Show map times (top 10)"
 - **Console** : `cl_showhud_map_times 1/0`
 
 ## Position et style
 
-- **Position** : Bas-droite de l'écran
-- **Taille** : 180px × 120px
+- **Position** : Haut-gauche du menu Tab/scoreboard (30px, 50px)
+- **Taille** : Adaptative selon le contenu
 - **Arrière-plan** : Noir semi-transparent (60% d'opacité)
 - **Coins arrondis** : 5px
 - **Couleurs du texte** :
   - 1er place : Or (#FFD700)
   - 2ème place : Argent (#C0C0C0)
   - 3ème place : Bronze (#CD853F)
-  - 4ème et 5ème : Blanc
+  - 4ème au 10ème : Blanc
 
 ## Fonctionnement technique
 
 1. **Détection de changement de carte** : Le composant détecte automatiquement quand le joueur change de carte
 2. **Requête HTTP** : Une requête est envoyée à l'API avec le nom de la carte
-3. **Parsing JSON** : Les données JSON sont analysées pour extraire les top 5
+3. **Parsing JSON** : Les données JSON sont analysées pour extraire les top 10
 4. **Mise en cache** : Les résultats sont mis en cache pour éviter les requêtes répétées
-5. **Rendu** : Le widget est rendu par-dessus les autres éléments HUD
+5. **Rendu conditionnel** : Le widget est rendu uniquement quand le menu Tab est ouvert
 
 ## Gestion d'erreurs
 

@@ -60,12 +60,22 @@ La fonctionnalité peut être activée/désactivée via :
 - **Menu** : Settings → Appearance → HUD → "Show map times (top 10)"
 - **Console** : `cl_showhud_map_times 1/0`
 
+### Taille du texte configurable
+
+Vous pouvez ajuster la taille du texte avec :
+- **Console** : `cl_map_times_text_size <valeur>` (défaut: 50, min: 10, max: 200)
+  - 50 = taille normale (50%)
+  - 100 = taille double
+  - 25 = taille très petite
+
 ## Position et style
 
 - **Position** : Haut-gauche du menu Tab/scoreboard (30px, 50px)
-- **Taille** : Adaptative selon le contenu
+- **Taille** : Adaptative selon le contenu et la configuration
+- **Taille de police** : Configurable via `cl_map_times_text_size` (défaut : 50% = police plus petite)
 - **Arrière-plan** : Noir semi-transparent (60% d'opacité)
 - **Coins arrondis** : 5px
+- **Format des temps** : HH:MM:SS.XX (2 décimales seulement)
 - **Couleurs du texte** :
   - 1er place : Or (#FFD700)
   - 2ème place : Argent (#C0C0C0)
@@ -98,3 +108,13 @@ La fonctionnalité peut être activée/désactivée via :
 - Compatible avec toutes les cartes DDNet ayant des données sur l'API
 - Fonctionne avec le système de configuration existant
 - Respect du style visuel de TaterClient
+
+## Améliorations récentes
+
+### Version actuelle
+- **Police plus petite** : Taille de base réduite de moitié pour une meilleure intégration
+- **Taille configurable** : Variable `cl_map_times_text_size` pour ajuster la taille du texte
+- **Format de temps optimisé** : Affichage avec seulement 2 décimales (ex: 00:06:12.82)
+- **Correction crosshair** : Le crosshair n'apparaît plus derrière le widget dans le menu Tab
+- **Top 10** : Passage de 5 à 10 records affichés
+- **Affichage conditionnel** : Widget visible uniquement dans le menu Tab/scoreboard

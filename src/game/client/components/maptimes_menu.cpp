@@ -72,7 +72,6 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 	// Configurable layout parameters (adjustable via console)
 	const float LineHeight = (float)g_Config.m_ClMapTimesMenuLineHeight;
 	const float FontSize = (float)g_Config.m_ClMapTimesMenuFontSize;
-	const float RoundRadius = 5.0f;
 	const float Spacing = (float)g_Config.m_ClMapTimesMenuSpacing;
 
 	// Column layout EXACTLY like scoreboard

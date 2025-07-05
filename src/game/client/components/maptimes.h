@@ -44,6 +44,7 @@ class CMapTimes : public CComponent
 	char m_aCurrentMap[64];
 	int64_t m_LastRequestTime;
 	int64_t m_LastUpdateTime;
+	bool m_PendingChatDisplay; // Flag to show results in chat when they arrive
 	
 	// Text containers for rendering
 	STextContainerIndex m_aPlayerNameContainers[MAX_TOP_RECORDS];

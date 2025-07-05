@@ -22,6 +22,7 @@ CMapTimes::CMapTimes()
 	m_LastRequestTime = 0;
 	m_LastUpdateTime = 0;
 	m_ContainersValid = false;
+	m_PendingChatDisplay = false;
 }
 
 void CMapTimes::OnInit()
@@ -40,6 +41,7 @@ void CMapTimes::OnReset()
 	m_aCurrentMap[0] = '\0';
 	m_LastRequestTime = 0;
 	m_LastUpdateTime = 0;
+	m_PendingChatDisplay = false;
 	ResetTextContainers();
 	
 	if(m_pRequest)
@@ -226,6 +228,19 @@ void CMapTimes::Update()
 	if(m_State == STATE_DONE && !m_ContainersValid)
 	{
 		UpdateTextContainers();
+	}
+	
+	// If we have pending chat display request and data is now ready, show it
+	if(m_PendingChatDisplay && HasValidData())
+	{
+		m_PendingChatDisplay = false;
+		ShowTop10InChat();
+	}
+	// If request failed and we were waiting to show results, notify user
+	else if(m_PendingChatDisplay && m_State == STATE_ERROR)
+	{
+		m_PendingChatDisplay = false;
+		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "Failed to load map times data.");
 	}
 }
 
@@ -483,19 +498,25 @@ void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)
 {
 	CMapTimes *pMapTimes = (CMapTimes *)pUser;
 	
-	// If no data available, try to request it first
-	if(!pMapTimes->HasValidData())
+	// If data is already available, show it immediately
+	if(pMapTimes->HasValidData())
 	{
-		const char *pCurrentMap = pMapTimes->Client()->GetCurrentMap();
-		if(pCurrentMap && pCurrentMap[0] != '\0')
-		{
-			pMapTimes->GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "Requesting map times data... Please wait and try again in a few seconds.");
-			pMapTimes->RequestMapTimes(pCurrentMap);
-			return;
-		}
+		pMapTimes->ShowTop10InChat();
+		return;
 	}
 	
-	pMapTimes->ShowTop10InChat();
+	// If no data available, request it and set flag to show when ready
+	const char *pCurrentMap = pMapTimes->Client()->GetCurrentMap();
+	if(pCurrentMap && pCurrentMap[0] != '\0')
+	{
+		pMapTimes->GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "Requesting map times data... Results will appear when ready.");
+		pMapTimes->m_PendingChatDisplay = true;
+		pMapTimes->RequestMapTimes(pCurrentMap);
+	}
+	else
+	{
+		pMapTimes->GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "No map loaded.");
+	}
 }
 
 void CMapTimes::ConKeyMapTimes(IConsole::IResult *pResult, void *pUserData)

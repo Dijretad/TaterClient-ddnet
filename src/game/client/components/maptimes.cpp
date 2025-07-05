@@ -346,13 +346,18 @@ void CMapTimes::RenderMapTimesTab(float x, float y)
 	if(!g_Config.m_ClShowhudMapTimes || !HasValidData())
 		return;
 
-	const float FontSize = 12.0f;
-	const float LineHeight = 16.0f;
-	const float HeaderHeight = 20.0f;
+	// Use configurable text size (default 50% = half size)
+	const float BaseFontSize = 6.0f; // Reduced from 12.0f
+	const float FontSize = BaseFontSize * (g_Config.m_ClMapTimesTextSize / 100.0f);
+	const float LineHeight = FontSize + 4.0f;
+	const float HeaderHeight = FontSize + 10.0f;
 	
 	// Background
 	float Width = 250.0f;
 	float Height = HeaderHeight + (m_NumRecords * LineHeight) + 10.0f;
+	
+	// Disable crosshair rendering to prevent it from appearing behind text
+	Graphics()->MapScreen(0, 0, Graphics()->ScreenWidth(), Graphics()->ScreenHeight());
 	
 	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.6f);
 	IGraphics::CQuadItem Quad(x, y, Width, Height);
@@ -385,14 +390,46 @@ void CMapTimes::RenderMapTimesTab(float x, float y)
 		else
 			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // White
 		
+		// Format time to show only 2 decimal places
+		char aFormattedTime[32];
+		FormatTime(aFormattedTime, sizeof(aFormattedTime), Record.m_aTime);
+		
 		// Format: "1. PlayerName - 1:23.45"
 		char aLine[128];
-		str_format(aLine, sizeof(aLine), "%d. %s - %s", i + 1, Record.m_aPlayerName, Record.m_aTime);
+		str_format(aLine, sizeof(aLine), "%d. %s - %s", i + 1, Record.m_aPlayerName, aFormattedTime);
 		
 		TextRender()->Text(x + 10.0f, RecordY, FontSize, aLine);
 	}
 	
 	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
+}
+
+void CMapTimes::FormatTime(char *pBuffer, int BufferSize, const char *pTimeString)
+{
+	// Input format: "00:20:02.440000"
+	// Output format: "00:20:02.44"
+	
+	if(!pTimeString || !pTimeString[0])
+	{
+		str_copy(pBuffer, "", BufferSize);
+		return;
+	}
+	
+	// Find the decimal point
+	const char *pDecimal = str_find(pTimeString, ".");
+	if(!pDecimal)
+	{
+		// No decimal point, just copy as is
+		str_copy(pBuffer, pTimeString, BufferSize);
+		return;
+	}
+	
+	// Calculate length up to decimal point + 3 characters (decimal + 2 digits)
+	int BaseLength = pDecimal - pTimeString;
+	int TotalLength = minimum(BaseLength + 3, (int)str_length(pTimeString));
+	TotalLength = minimum(TotalLength, BufferSize - 1);
+	
+	str_copy(pBuffer, pTimeString, TotalLength + 1);
 }
 
 void CMapTimes::OnRender()

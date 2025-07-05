@@ -52,6 +52,7 @@ class CMapTimes : public CComponent
 	void ParseResponse(const char *pJson);
 	void UpdateTextContainers();
 	void ResetTextContainers();
+	void FormatTime(char *pBuffer, int BufferSize, const char *pTimeString);
 
 public:
 	CMapTimes();

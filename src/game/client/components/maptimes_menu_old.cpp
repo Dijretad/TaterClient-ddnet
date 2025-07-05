@@ -29,7 +29,7 @@ void CMapTimesMenu::OnInit()
 
 void CMapTimesMenu::RenderTitle(CUIRect TitleBar, const char *pTitle)
 {
-	// EXACT title rendering from scoreboard
+	// Exact copy from scoreboard RenderTitle but simplified
 	TitleBar.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);
 	
 	const float TitleFontSize = 40.0f;
@@ -49,7 +49,9 @@ void CMapTimesMenu::RenderTitle(CUIRect TitleBar, const char *pTitle)
 
 void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 {
-	// Get data from MapTimes component
+	// EXACT copy from scoreboard RenderScoreboard, but using Map Times data instead of player data
+	
+	// Get map times data
 	if(!GameClient()->m_MapTimes.HasValidData())
 	{
 		SLabelProperties Props;
@@ -58,7 +60,7 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 		Ui()->DoLabel(&Scoreboard, "Loading map times...", 24.0f, TEXTALIGN_MC, Props);
 		return;
 	}
-
+	
 	const int NumRecords = GameClient()->m_MapTimes.GetNumRecords();
 	if(NumRecords == 0)
 	{
@@ -69,67 +71,130 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 		return;
 	}
 
-	// Fixed layout optimized for exactly 10 entries (like scoreboard with ~10 players)
-	const float LineHeight = 50.0f;
-	const float FontSize = 22.0f;
-	const float RoundRadius = 5.0f;
-	const float Spacing = 2.0f;
+	const bool TimeScore = true; // Always true for map times
+	const int NumPlayers = NumRecords; // Use number of records instead of players
+	const bool LowScoreboardWidth = Scoreboard.w < 700.0f;
 
-	// Column layout EXACTLY like scoreboard
-	const float RankOffset = Scoreboard.x + 40.0f;
-	const float RankLength = TextRender()->TextWidth(FontSize, "99");
-	const float TimeLength = TextRender()->TextWidth(FontSize, "00:00:00");
-	const float TimeOffset = Scoreboard.x + Scoreboard.w - TimeLength - 20.0f;
-	const float NameOffset = RankOffset + RankLength + 20.0f;
-	const float NameLength = TimeOffset - NameOffset - 20.0f;
+	// EXACT calculation from scoreboard
+	float LineHeight;
+	float TeeSizeMod;
+	float Spacing;
+	float RoundRadius;
+	float FontSize;
+	if(NumPlayers <= 8)
+	{
+		LineHeight = 60.0f;
+		TeeSizeMod = 1.0f;
+		Spacing = 16.0f;
+		RoundRadius = 10.0f;
+		FontSize = 24.0f;
+	}
+	else if(NumPlayers <= 12)
+	{
+		LineHeight = 50.0f;
+		TeeSizeMod = 0.9f;
+		Spacing = 5.0f;
+		RoundRadius = 10.0f;
+		FontSize = 24.0f;
+	}
+	else if(NumPlayers <= 16)
+	{
+		LineHeight = 40.0f;
+		TeeSizeMod = 0.8f;
+		Spacing = 0.0f;
+		RoundRadius = 5.0f;
+		FontSize = 24.0f;
+	}
+	else if(NumPlayers <= 24)
+	{
+		LineHeight = 27.0f;
+		TeeSizeMod = 0.6f;
+		Spacing = 0.0f;
+		RoundRadius = 5.0f;
+		FontSize = 20.0f;
+	}
+	else if(NumPlayers <= 32)
+	{
+		LineHeight = 20.0f;
+		TeeSizeMod = 0.4f;
+		Spacing = 0.0f;
+		RoundRadius = 5.0f;
+		FontSize = 16.0f;
+	}
+	else if(LowScoreboardWidth)
+	{
+		LineHeight = 15.0f;
+		TeeSizeMod = 0.25f;
+		Spacing = 0.0f;
+		RoundRadius = 2.0f;
+		FontSize = 14.0f;
+	}
+	else
+	{
+		LineHeight = 10.0f;
+		TeeSizeMod = 0.2f;
+		Spacing = 0.0f;
+		RoundRadius = 2.0f;
+		FontSize = 10.0f;
+	}
 
-	// EXACT headline rendering from scoreboard
+	// EXACT layout from scoreboard but adapted for rank/name/time
+	const float ScoreOffset = Scoreboard.x + 40.0f;
+	const float ScoreLength = TextRender()->TextWidth(FontSize, TimeScore ? "00:00:00" : "99999");
+	const float TeeOffset = ScoreOffset + ScoreLength + 20.0f;
+	const float TeeLength = 60.0f * TeeSizeMod;
+	const float NameOffset = TeeOffset + TeeLength;
+	const float NameLength = (LowScoreboardWidth ? 180.0f : 300.0f) - TeeLength;
+	const float CountryLength = (LineHeight - Spacing - TeeSizeMod * 5.0f) * 2.0f;
+	const float PingLength = 55.0f;
+	const float PingOffset = Scoreboard.x + Scoreboard.w - PingLength - 20.0f;
+	const float CountryOffset = PingOffset - CountryLength;
+	const float ClanOffset = NameOffset + NameLength + 5.0f;
+	const float ClanLength = CountryOffset - ClanOffset - 5.0f;
+
+	// EXACT headlines from scoreboard
 	const float HeadlineFontsize = 22.0f;
 	CUIRect Headline;
 	Scoreboard.HSplitTop(HeadlineFontsize * 2.0f, &Headline, &Scoreboard);
 	const float HeadlineY = Headline.y + Headline.h / 2.0f - HeadlineFontsize / 2.0f;
-	
-	TextRender()->Text(RankOffset, HeadlineY, HeadlineFontsize, Localize("Rank"));
+	const char *pScore = Localize("Rank"); // Changed from "Score"/"Time" to "Rank"
+	TextRender()->Text(ScoreOffset + ScoreLength - TextRender()->TextWidth(HeadlineFontsize, pScore), HeadlineY, HeadlineFontsize, pScore);
 	TextRender()->Text(NameOffset, HeadlineY, HeadlineFontsize, Localize("Name"));
-	const char *pTimeLabel = Localize("Time");
-	TextRender()->Text(TimeOffset + TimeLength - TextRender()->TextWidth(HeadlineFontsize, pTimeLabel), HeadlineY, HeadlineFontsize, pTimeLabel);
+	const char *pTimeLabel = Localize("Time"); // Added time column header
+	TextRender()->Text(PingOffset + PingLength - TextRender()->TextWidth(HeadlineFontsize, pTimeLabel), HeadlineY, HeadlineFontsize, pTimeLabel);
 
-	// Render exactly 10 entries (top 10 leaderboard)
-	for(int i = 0; i < 10; i++)
+	// EXACT player rendering loop from scoreboard, but with map times data
+	int CountRendered = 0;
+
+	char aBuf[64];
+
+	// Simplified loop - no teams, no dead/alive, just records
+	for(int i = 0; i < NumRecords && i < 16; i++) // Max 16 like scoreboard
 	{
 		const SMapTimeRecord *pRecord = GameClient()->m_MapTimes.GetRecord(i);
-		
+		if(!pRecord)
+			break;
+
 		CUIRect RowAndSpacing, Row;
 		Scoreboard.HSplitTop(LineHeight + Spacing, &RowAndSpacing, &Scoreboard);
 		RowAndSpacing.HSplitTop(LineHeight, &Row, nullptr);
 
-		// EXACT background color logic from scoreboard but with podium colors
+		// EXACT background logic from scoreboard but with podium colors
 		ColorRGBA BackgroundColor;
-		if(pRecord && pRecord->m_Rank == 1) // Gold
+		if(pRecord->m_Rank == 1) // Gold
 			BackgroundColor = ColorRGBA(1.0f, 0.84f, 0.0f, 0.5f);
-		else if(pRecord && pRecord->m_Rank == 2) // Silver
+		else if(pRecord->m_Rank == 2) // Silver
 			BackgroundColor = ColorRGBA(0.75f, 0.75f, 0.75f, 0.5f);
-		else if(pRecord && pRecord->m_Rank == 3) // Bronze
+		else if(pRecord->m_Rank == 3) // Bronze
 			BackgroundColor = ColorRGBA(0.8f, 0.52f, 0.25f, 0.5f);
 		else if(i % 2 == 0)
 			BackgroundColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f);
 		else
 			BackgroundColor = ColorRGBA(0.1f, 0.1f, 0.1f, 0.25f);
 
-		// EXACT draw from scoreboard
 		RowAndSpacing.Draw(BackgroundColor, IGraphics::CORNER_ALL, RoundRadius);
 
-		if(!pRecord)
-		{
-			// Empty slot - show placeholder
-			char aRankText[16];
-			str_format(aRankText, sizeof(aRankText), "%d.", i + 1);
-			TextRender()->Text(RankOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, aRankText);
-			TextRender()->Text(NameOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, "---");
-			continue;
-		}
-
-		// EXACT text color logic from scoreboard for podium places
+		// EXACT text color logic
 		ColorRGBA TextColor = TextRender()->DefaultTextColor();
 		if(pRecord->m_Rank == 1)
 			TextColor = ColorRGBA(1.0f, 0.84f, 0.0f, 1.0f);
@@ -140,20 +205,13 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 		
 		TextRender()->TextColor(TextColor);
 
-		// Render rank with medal emojis
-		char aRankText[16];
-		if(pRecord->m_Rank == 1)
-			str_format(aRankText, sizeof(aRankText), "🥇 %d", pRecord->m_Rank);
-		else if(pRecord->m_Rank == 2)
-			str_format(aRankText, sizeof(aRankText), "🥈 %d", pRecord->m_Rank);
-		else if(pRecord->m_Rank == 3)
-			str_format(aRankText, sizeof(aRankText), "🥉 %d", pRecord->m_Rank);
-		else
-			str_format(aRankText, sizeof(aRankText), "%d", pRecord->m_Rank);
-		
-		TextRender()->Text(RankOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, aRankText);
+		// Rank instead of score
+		str_format(aBuf, sizeof(aBuf), "%d", pRecord->m_Rank);
+		TextRender()->Text(ScoreOffset + ScoreLength - TextRender()->TextWidth(FontSize, aBuf), Row.y + (Row.h - FontSize) / 2.0f, FontSize, aBuf);
 
-		// EXACT name rendering from scoreboard with ellipsis
+		// Skip tee rendering - we don't have tees for map times
+
+		// EXACT name rendering from scoreboard
 		{
 			CTextCursor Cursor;
 			TextRender()->SetCursor(&Cursor, NameOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, TEXTFLAG_RENDER | TEXTFLAG_ELLIPSIS_AT_END);
@@ -161,13 +219,17 @@ void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 			TextRender()->TextEx(&Cursor, pRecord->m_aPlayerName);
 		}
 
-		// Format and render time (right-aligned like ping in scoreboard)
-		char aFormattedTime[32];
-		GameClient()->m_MapTimes.FormatTime(aFormattedTime, sizeof(aFormattedTime), pRecord->m_aTime);
-		TextRender()->Text(TimeOffset + TimeLength - TextRender()->TextWidth(FontSize, aFormattedTime), Row.y + (Row.h - FontSize) / 2.0f, FontSize, aFormattedTime);
+		// Time in ping position (right-aligned)
+		{
+			char aFormattedTime[32];
+			GameClient()->m_MapTimes.FormatTime(aFormattedTime, sizeof(aFormattedTime), pRecord->m_aTime);
+			TextRender()->Text(PingOffset + PingLength - TextRender()->TextWidth(FontSize, aFormattedTime), Row.y + (Row.h - FontSize) / 2.0f, FontSize, aFormattedTime);
+		}
 
-		// Reset text color EXACTLY like scoreboard
+		// Reset color
 		TextRender()->TextColor(TextRender()->DefaultTextColor());
+
+		CountRendered++;
 	}
 }
 
@@ -194,7 +256,7 @@ void CMapTimesMenu::OnRender()
 	// EXACT background from scoreboard
 	Scoreboard.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);
 
-	// EXACT title split from scoreboard
+	// EXACT title split
 	CUIRect TitleBar, MainBody;
 	Scoreboard.HSplitTop(TitleHeight, &TitleBar, &MainBody);
 	
@@ -205,7 +267,7 @@ void CMapTimesMenu::OnRender()
 	MainBody.VMargin(10.0f, &MainBody);
 	MainBody.VMargin(10.0f, &MainBody);
 	
-	// Render map times using EXACT scoreboard logic
+	// Render map times using scoreboard logic
 	RenderMapTimes(MainBody);
 }
 

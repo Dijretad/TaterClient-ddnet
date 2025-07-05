@@ -4,9 +4,26 @@
 #define GAME_CLIENT_COMPONENTS_MAPTIMES_MENU_H
 
 #include <game/client/component.h>
+#include <game/client/ui_rect.h>
 
 class CMapTimesMenu : public CComponent
 {
+	struct CMapTimesRenderState
+	{
+		float m_LineHeight;
+		float m_FontSize;
+		float m_RoundRadius;
+		float m_Spacing;
+		
+		CMapTimesRenderState() :
+			m_LineHeight(40.0f), m_FontSize(24.0f), m_RoundRadius(5.0f), m_Spacing(0.0f) {}
+	};
+
+	void RenderBackground(CUIRect Background);
+	void RenderTitle(CUIRect TitleBar, const char *pTitle);
+	void RenderMapTimes(CUIRect MapTimes, CMapTimesRenderState &State);
+	void RenderEntry(CUIRect Entry, int Rank, const char *pName, const char *pTime, int Index, CMapTimesRenderState &State);
+	void CalculateLayout(int NumEntries, CMapTimesRenderState &State);
 	bool m_Active;
 	bool m_WasActive;
 	int64_t m_LastToggle;

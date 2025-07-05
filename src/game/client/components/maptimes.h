@@ -55,7 +55,6 @@ class CMapTimes : public CComponent
 	void ParseResponse(const char *pJson);
 	void UpdateTextContainers();
 	void ResetTextContainers();
-	void FormatTime(char *pBuffer, int BufferSize, const char *pTimeString);
 
 public:
 	CMapTimes();
@@ -70,6 +69,12 @@ public:
 	void RenderMapTimesTab(float x, float y); // Nouveau rendu pour le menu Tab
 	void RenderMapTimesFullscreen(float x, float y); // Nouveau rendu fullscreen
 	bool HasValidData() const { return m_State == STATE_DONE && m_NumRecords > 0; }
+	
+	// Accessors for leaderboard display
+	int GetNumRecords() const { return m_NumRecords; }
+	const SMapTimeRecord *GetRecord(int Index) const { return (Index >= 0 && Index < m_NumRecords) ? &m_aTopRecords[Index] : nullptr; }
+	const char *GetCurrentMap() const { return m_aCurrentMap; }
+	void FormatTime(char *pBuffer, int BufferSize, const char *pTimeString);
 	
 	// Command functions
 	void ShowTop10InChat();

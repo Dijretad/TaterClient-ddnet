@@ -1,5 +1,10 @@
 name: Build
 
+# CI Strategy:
+# - Default commits: Windows build only (fast development)
+# - Full build: Add "[ci full]" to commit message for all platforms (Linux, macOS, Windows)
+# - Use for releases, major changes, or when cross-platform testing is needed
+
 on:
   push:
     branches-ignore:
@@ -15,7 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest, ubuntu-22.04]
+        # Default: Windows only for fast development builds
+        # Full build: Add [ci full] to commit message for all platforms
+        os: ${{ contains(github.event.head_commit.message, '[ci full]') && fromJSON('["ubuntu-latest", "macOS-latest", "windows-latest", "ubuntu-22.04"]') || fromJSON('["windows-latest"]') }}
         include:
         - os: ubuntu-latest
           cmake-args: -G Ninja

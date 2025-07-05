@@ -13,6 +13,7 @@
 #include <game/client/ui.h>
 #include <game/client/render.h>
 #include <game/localization.h>
+#include <game/client/components/maptimes.h>
 
 CMapTimesMenu::CMapTimesMenu()
 {
@@ -26,64 +27,12 @@ void CMapTimesMenu::OnInit()
 	// Nothing to initialize for now
 }
 
-void CMapTimesMenu::CalculateLayout(int NumEntries, CMapTimesRenderState &State)
-{
-	// Adapt layout based on number of entries (similar to scoreboard)
-	if(NumEntries <= 8)
-	{
-		State.m_LineHeight = 60.0f;
-		State.m_FontSize = 24.0f;
-		State.m_RoundRadius = 10.0f;
-		State.m_Spacing = 16.0f;
-	}
-	else if(NumEntries <= 12)
-	{
-		State.m_LineHeight = 50.0f;
-		State.m_FontSize = 22.0f;
-		State.m_RoundRadius = 10.0f;
-		State.m_Spacing = 5.0f;
-	}
-	else if(NumEntries <= 16)
-	{
-		State.m_LineHeight = 40.0f;
-		State.m_FontSize = 20.0f;
-		State.m_RoundRadius = 5.0f;
-		State.m_Spacing = 0.0f;
-	}
-	else
-	{
-		State.m_LineHeight = 30.0f;
-		State.m_FontSize = 18.0f;
-		State.m_RoundRadius = 5.0f;
-		State.m_Spacing = 0.0f;
-	}
-}
-
-void CMapTimesMenu::RenderBackground(CUIRect Background)
-{
-	// Dark semi-transparent background like scoreboard
-	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.8f);
-	Graphics()->QuadsBegin();
-	IGraphics::CQuadItem BackgroundQuad(Background.x, Background.y, Background.w, Background.h);
-	Graphics()->QuadsDraw(&BackgroundQuad, 1);
-	Graphics()->QuadsEnd();
-	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-}
-
 void CMapTimesMenu::RenderTitle(CUIRect TitleBar, const char *pTitle)
 {
-	// Title background (darker than main background)
-	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.9f);
-	Graphics()->QuadsBegin();
-	IGraphics::CQuadItem TitleQuad(TitleBar.x, TitleBar.y, TitleBar.w, TitleBar.h);
-	Graphics()->QuadsDraw(&TitleQuad, 1);
-	Graphics()->QuadsEnd();
-	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	// Title background (like scoreboard title)
+	TitleBar.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);
 	
-	// Title text
-	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
+	const float TitleFontSize = 40.0f;
 	char aFullTitle[128];
 	const char *pCurrentMap = Client()->GetCurrentMap();
 	if(pCurrentMap && pCurrentMap[0] != '\0')
@@ -91,82 +40,154 @@ void CMapTimesMenu::RenderTitle(CUIRect TitleBar, const char *pTitle)
 	else
 		str_copy(aFullTitle, pTitle, sizeof(aFullTitle));
 	
-	float TitleWidth = TextRender()->TextWidth(28.0f, aFullTitle, -1, -1.0f);
-	float TitleX = TitleBar.x + TitleBar.w / 2.0f - TitleWidth / 2.0f;
-	float TitleY = TitleBar.y + TitleBar.h / 2.0f - 14.0f;
-	
-	TextRender()->Text(TitleX, TitleY, 28.0f, aFullTitle);
+	// Center the title like scoreboard
+	TitleBar.VMargin(20.0f, &TitleBar);
+	SLabelProperties Props;
+	Props.m_MaxWidth = TitleBar.w;
+	Props.m_EllipsisAtEnd = true;
+	Ui()->DoLabel(&TitleBar, aFullTitle, TitleFontSize, TEXTALIGN_MC, Props);
 }
 
-void CMapTimesMenu::RenderEntry(CUIRect Entry, int Rank, const char *pName, const char *pTime, int Index, CMapTimesRenderState &State)
+void CMapTimesMenu::RenderMapTimes(CUIRect Scoreboard)
 {
-	const float RankWidth = 80.0f;
-	const float TimeWidth = 140.0f;
-	const float Padding = 15.0f;
-	
-	// Background color based on rank (like scoreboard alternating + podium colors)
-	ColorRGBA BackgroundColor;
-	if(Rank == 1) // 1st place - Gold
-		BackgroundColor = ColorRGBA(1.0f, 0.84f, 0.0f, 0.4f);
-	else if(Rank == 2) // 2nd place - Silver  
-		BackgroundColor = ColorRGBA(0.75f, 0.75f, 0.75f, 0.4f);
-	else if(Rank == 3) // 3rd place - Bronze
-		BackgroundColor = ColorRGBA(0.8f, 0.52f, 0.25f, 0.4f);
-	else if(Index % 2 == 0)
-		BackgroundColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.3f); // Even rows
+	// Get data from MapTimes component
+	if(!GameClient()->m_MapTimes.HasValidData())
+	{
+		// Show loading message
+		SLabelProperties Props;
+		Props.m_MaxWidth = Scoreboard.w;
+		Props.m_EllipsisAtEnd = true;
+		Ui()->DoLabel(&Scoreboard, "Loading map times...", 24.0f, TEXTALIGN_MC, Props);
+		return;
+	}
+
+	const int NumRecords = GameClient()->m_MapTimes.GetNumRecords();
+	if(NumRecords == 0)
+	{
+		// Show no records message
+		SLabelProperties Props;
+		Props.m_MaxWidth = Scoreboard.w;
+		Props.m_EllipsisAtEnd = true;
+		Ui()->DoLabel(&Scoreboard, "No records available", 24.0f, TEXTALIGN_MC, Props);
+		return;
+	}
+
+	// Adaptive layout based on number of records (like scoreboard)
+	float LineHeight, FontSize, RoundRadius, Spacing;
+	if(NumRecords <= 8)
+	{
+		LineHeight = 60.0f;
+		FontSize = 24.0f;
+		RoundRadius = 10.0f;
+		Spacing = 16.0f;
+	}
+	else if(NumRecords <= 12)
+	{
+		LineHeight = 50.0f;
+		FontSize = 22.0f;
+		RoundRadius = 5.0f;
+		Spacing = 5.0f;
+	}
+	else if(NumRecords <= 16)
+	{
+		LineHeight = 40.0f;
+		FontSize = 20.0f;
+		RoundRadius = 5.0f;
+		Spacing = 0.0f;
+	}
 	else
-		BackgroundColor = ColorRGBA(0.1f, 0.1f, 0.1f, 0.3f); // Odd rows
+	{
+		LineHeight = 30.0f;
+		FontSize = 18.0f;
+		RoundRadius = 2.0f;
+		Spacing = 0.0f;
+	}
+
+	// Column layout (like scoreboard)
+	const float RankOffset = Scoreboard.x + 40.0f;
+	const float RankLength = 80.0f;
+	const float TimeLength = TextRender()->TextWidth(FontSize, "00:00:00");
+	const float TimeOffset = Scoreboard.x + Scoreboard.w - TimeLength - 20.0f;
+	const float NameOffset = RankOffset + RankLength;
+	const float NameLength = TimeOffset - NameOffset - 20.0f;
+
+	// Render column headers (like scoreboard)
+	const float HeadlineFontsize = 22.0f;
+	CUIRect Headline;
+	Scoreboard.HSplitTop(HeadlineFontsize * 2.0f, &Headline, &Scoreboard);
+	const float HeadlineY = Headline.y + Headline.h / 2.0f - HeadlineFontsize / 2.0f;
 	
-	// Draw entry background with rounded corners (like scoreboard)
-	Graphics()->SetColor(BackgroundColor.r, BackgroundColor.g, BackgroundColor.b, BackgroundColor.a);
-	Graphics()->QuadsBegin();
-	IGraphics::CQuadItem EntryQuad(Entry.x + 2.0f, Entry.y + State.m_Spacing / 2.0f, Entry.w - 4.0f, Entry.h - State.m_Spacing);
-	Graphics()->QuadsDraw(&EntryQuad, 1);
-	Graphics()->QuadsEnd();
-	Graphics()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
-	// Text color based on rank
-	ColorRGBA TextColor;
-	if(Rank == 1) // 1st place - Gold
-		TextColor = ColorRGBA(1.0f, 0.84f, 0.0f, 1.0f);
-	else if(Rank == 2) // 2nd place - Silver
-		TextColor = ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f);
-	else if(Rank == 3) // 3rd place - Bronze
-		TextColor = ColorRGBA(0.8f, 0.52f, 0.25f, 1.0f);
-	else
-		TextColor = ColorRGBA(1.0f, 1.0f, 1.0f, 1.0f);
-	
-	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-	TextRender()->TextColor(TextColor.r, TextColor.g, TextColor.b, TextColor.a);
-	
-	// Calculate vertical center position for text
-	float TextY = Entry.y + Entry.h / 2.0f - State.m_FontSize / 2.0f;
-	
-	// Render rank
-	char aRankText[16];
-	if(Rank == 1)
-		str_format(aRankText, sizeof(aRankText), "🥇 %d.", Rank);
-	else if(Rank == 2)
-		str_format(aRankText, sizeof(aRankText), "🥈 %d.", Rank);
-	else if(Rank == 3)
-		str_format(aRankText, sizeof(aRankText), "🥉 %d.", Rank);
-	else
-		str_format(aRankText, sizeof(aRankText), "%d.", Rank);
-	
-	float RankX = Entry.x + Padding;
-	TextRender()->Text(RankX, TextY, State.m_FontSize, aRankText);
-	
-	// Render player name (centered)
-	float NameX = Entry.x + RankWidth + Padding;
-	float NameMaxWidth = Entry.w - RankWidth - TimeWidth - 3 * Padding;
-	TextRender()->Text(NameX, TextY, State.m_FontSize, pName, NameMaxWidth);
-	
-	// Render time (right aligned)
-	float TimeTextWidth = TextRender()->TextWidth(State.m_FontSize, pTime, -1, -1.0f);
-	float TimeX = Entry.x + Entry.w - TimeTextWidth - Padding;
-	TextRender()->Text(TimeX, TextY, State.m_FontSize, pTime);
-	
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+	TextRender()->Text(RankOffset, HeadlineY, HeadlineFontsize, Localize("Rank"));
+	TextRender()->Text(NameOffset, HeadlineY, HeadlineFontsize, Localize("Name"));
+	const char *pTimeLabel = Localize("Time");
+	TextRender()->Text(TimeOffset + TimeLength - TextRender()->TextWidth(HeadlineFontsize, pTimeLabel), HeadlineY, HeadlineFontsize, pTimeLabel);
+
+	// Render entries
+	const int MaxDisplayed = minimum(NumRecords, 16); // Don't show more than 16 entries
+	for(int i = 0; i < MaxDisplayed; i++)
+	{
+		const SMapTimeRecord *pRecord = GameClient()->m_MapTimes.GetRecord(i);
+		if(!pRecord)
+			break;
+
+		CUIRect RowAndSpacing, Row;
+		Scoreboard.HSplitTop(LineHeight + Spacing, &RowAndSpacing, &Scoreboard);
+		RowAndSpacing.HSplitTop(LineHeight, &Row, nullptr);
+
+		// Background color based on rank (like scoreboard)
+		ColorRGBA BackgroundColor;
+		if(pRecord->m_Rank == 1) // Gold
+			BackgroundColor = ColorRGBA(1.0f, 0.84f, 0.0f, 0.5f);
+		else if(pRecord->m_Rank == 2) // Silver
+			BackgroundColor = ColorRGBA(0.75f, 0.75f, 0.75f, 0.5f);
+		else if(pRecord->m_Rank == 3) // Bronze
+			BackgroundColor = ColorRGBA(0.8f, 0.52f, 0.25f, 0.5f);
+		else if(i % 2 == 0)
+			BackgroundColor = ColorRGBA(0.0f, 0.0f, 0.0f, 0.25f);
+		else
+			BackgroundColor = ColorRGBA(0.1f, 0.1f, 0.1f, 0.25f);
+
+		// Draw row background
+		RowAndSpacing.Draw(BackgroundColor, IGraphics::CORNER_ALL, RoundRadius);
+
+		// Text color for podium places
+		ColorRGBA TextColor = TextRender()->DefaultTextColor();
+		if(pRecord->m_Rank == 1)
+			TextColor = ColorRGBA(1.0f, 0.84f, 0.0f, 1.0f);
+		else if(pRecord->m_Rank == 2)
+			TextColor = ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f);
+		else if(pRecord->m_Rank == 3)
+			TextColor = ColorRGBA(0.8f, 0.52f, 0.25f, 1.0f);
+		
+		TextRender()->TextColor(TextColor);
+
+		// Render rank with medal emojis
+		char aRankText[16];
+		if(pRecord->m_Rank == 1)
+			str_format(aRankText, sizeof(aRankText), "🥇 %d", pRecord->m_Rank);
+		else if(pRecord->m_Rank == 2)
+			str_format(aRankText, sizeof(aRankText), "🥈 %d", pRecord->m_Rank);
+		else if(pRecord->m_Rank == 3)
+			str_format(aRankText, sizeof(aRankText), "🥉 %d", pRecord->m_Rank);
+		else
+			str_format(aRankText, sizeof(aRankText), "%d", pRecord->m_Rank);
+		
+		TextRender()->Text(RankOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, aRankText);
+
+		// Render name with ellipsis
+		CTextCursor Cursor;
+		TextRender()->SetCursor(&Cursor, NameOffset, Row.y + (Row.h - FontSize) / 2.0f, FontSize, TEXTFLAG_RENDER | TEXTFLAG_ELLIPSIS_AT_END);
+		Cursor.m_LineWidth = NameLength;
+		TextRender()->TextEx(&Cursor, pRecord->m_aPlayerName);
+
+		// Format and render time
+		char aFormattedTime[32];
+		GameClient()->m_MapTimes.FormatTime(aFormattedTime, sizeof(aFormattedTime), pRecord->m_aTime);
+		TextRender()->Text(TimeOffset + TimeLength - TextRender()->TextWidth(FontSize, aFormattedTime), Row.y + (Row.h - FontSize) / 2.0f, FontSize, aFormattedTime);
+
+		// Reset text color
+		TextRender()->TextColor(TextRender()->DefaultTextColor());
+	}
 }
 
 void CMapTimesMenu::OnRender()
@@ -177,53 +198,34 @@ void CMapTimesMenu::OnRender()
 	if(Client()->State() != IClient::STATE_ONLINE && Client()->State() != IClient::STATE_DEMOPLAYBACK)
 		return;
 
-	// Setup screen coordinates
-	Graphics()->MapScreen(0, 0, Graphics()->ScreenWidth(), Graphics()->ScreenHeight());
+	// Calculate scoreboard dimensions (exactly like scoreboard)
+	const float Width = 400.0f * 3.0f;
+	const float Height = 650.0f;
+	const float w = Width;
+	const float h = Height;
 
-	// Calculate leaderboard dimensions (like scoreboard)
-	float LeaderboardWidth = minimum(Graphics()->ScreenWidth() - 60.0f, 800.0f);
-	float LeaderboardHeight = minimum(Graphics()->ScreenHeight() - 120.0f, 600.0f);
-	float TitleHeight = 60.0f;
+	const float TitleHeight = 60.0f;
+	const float x = Graphics()->ScreenWidth() / 2.0f - w / 2.0f;
+	const float y = 150.0f;
+
+	CUIRect Scoreboard = {x, y, w, h};
 	
-	// Center on screen
-	float LeaderboardX = Graphics()->ScreenWidth() / 2.0f - LeaderboardWidth / 2.0f;
-	float LeaderboardY = Graphics()->ScreenHeight() / 2.0f - LeaderboardHeight / 2.0f;
-	
-	// Main leaderboard rect
-	CUIRect MainRect;
-	MainRect.x = LeaderboardX;
-	MainRect.y = LeaderboardY;
-	MainRect.w = LeaderboardWidth;
-	MainRect.h = LeaderboardHeight;
-	
-	// Render main background (like scoreboard)
-	RenderBackground(MainRect);
-	
-	// Split into title and content
-	CUIRect TitleRect, ContentRect;
-	MainRect.HSplitTop(TitleHeight, &TitleRect, &ContentRect);
+	// Main scoreboard background (like scoreboard)
+	Scoreboard.Draw(ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f), IGraphics::CORNER_ALL, 15.0f);
+
+	// Split title and content
+	CUIRect TitleBar, MainBody;
+	Scoreboard.HSplitTop(TitleHeight, &TitleBar, &MainBody);
 	
 	// Render title
-	RenderTitle(TitleRect, "Map Times Leaderboard");
+	RenderTitle(TitleBar, "Map Times Leaderboard");
 	
-	// Add margin to content (like scoreboard padding)
-	ContentRect.Margin(15.0f, &ContentRect);
+	// Add margins like scoreboard
+	MainBody.VMargin(10.0f, &MainBody);
+	MainBody.VMargin(10.0f, &MainBody);
 	
-	// Render map times content
-	CMapTimesRenderState RenderState;
-	RenderMapTimes(ContentRect, RenderState);
-	
-	// Instructions at the bottom (like scoreboard style)
-	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 0.7f);
-	
-	const char *pInstructions = "Press ESC or release assigned key to close";
-	float InstructionsWidth = TextRender()->TextWidth(16.0f, pInstructions, -1, -1.0f);
-	float InstructionsX = Graphics()->ScreenWidth() / 2.0f - InstructionsWidth / 2.0f;
-	float InstructionsY = Graphics()->ScreenHeight() - 40.0f;
-	
-	TextRender()->Text(InstructionsX, InstructionsY, 16.0f, pInstructions);
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+	// Render the map times content
+	RenderMapTimes(MainBody);
 }
 
 void CMapTimesMenu::OnRelease()
@@ -240,15 +242,14 @@ bool CMapTimesMenu::OnCursorMove(float x, float y, IInput::ECursorType CursorTyp
 
 bool CMapTimesMenu::OnInput(const IInput::CEvent &Event)
 {
-	// Don't handle direct input anymore - control is now via console command (+map_times)
-	// Only handle ESC key to close the menu
+	// Handle ESC key to close the menu
 	if(IsActive() && Event.m_Flags & IInput::FLAG_PRESS && Event.m_Key == KEY_ESCAPE)
 	{
 		SetActive(false);
 		return true;
 	}
 
-	return IsActive(); // Consume all input when active, but don't process keys for opening
+	return IsActive(); // Consume all input when active
 }
 
 void CMapTimesMenu::Toggle()
@@ -273,82 +274,5 @@ void CMapTimesMenu::SetActive(bool Active)
 			// When opening, ensure we have fresh data
 			GameClient()->m_MapTimes.OnMapLoad();
 		}
-	}
-}
-
-void CMapTimesMenu::RenderMapTimes(CUIRect MapTimes, CMapTimesRenderState &State)
-{
-	// Get data from MapTimes component
-	if(!GameClient()->m_MapTimes.HasValidData())
-	{
-		// Show loading message in scoreboard style
-		TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-		TextRender()->TextColor(1.0f, 1.0f, 1.0f, 0.8f);
-		
-		const char *pLoadingText = "Loading map times...";
-		float LoadingWidth = TextRender()->TextWidth(24.0f, pLoadingText, -1, -1.0f);
-		float LoadingX = MapTimes.x + MapTimes.w / 2.0f - LoadingWidth / 2.0f;
-		float LoadingY = MapTimes.y + MapTimes.h / 2.0f - 12.0f;
-		
-		TextRender()->Text(LoadingX, LoadingY, 24.0f, pLoadingText);
-		TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
-		return;
-	}
-	
-	// Get map times data (we'll use the same data structure as the existing MapTimes component)
-	const int NumEntries = 10; // Top 10
-	CalculateLayout(NumEntries, State);
-	
-	// Create column headers (like scoreboard)
-	const float HeadlineFontsize = 22.0f;
-	CUIRect Headline;
-	MapTimes.HSplitTop(HeadlineFontsize * 2.0f, &Headline, &MapTimes);
-	
-	const float RankWidth = 80.0f;
-	const float Padding = 15.0f;
-	
-	// Render column headers
-	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 0.9f);
-	
-	const float HeadlineY = Headline.y + Headline.h / 2.0f - HeadlineFontsize / 2.0f;
-	
-	// Rank header
-	TextRender()->Text(Headline.x + Padding, HeadlineY, HeadlineFontsize, "Rank");
-	
-	// Name header (centered)
-	const char *pNameLabel = "Player Name";
-	float NameX = Headline.x + RankWidth + Padding;
-	TextRender()->Text(NameX, HeadlineY, HeadlineFontsize, pNameLabel);
-	
-	// Time header (right aligned)
-	const char *pTimeLabel = "Time";
-	float TimeLabelWidth = TextRender()->TextWidth(HeadlineFontsize, pTimeLabel, -1, -1.0f);
-	float TimeX = Headline.x + Headline.w - TimeLabelWidth - Padding;
-	TextRender()->Text(TimeX, HeadlineY, HeadlineFontsize, pTimeLabel);
-	
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
-	// Render entries
-	CUIRect EntryRect = MapTimes;
-	EntryRect.h = State.m_LineHeight;
-	
-	// Get real data from MapTimes component
-	const int NumRecords = GameClient()->m_MapTimes.GetNumRecords();
-	for(int i = 0; i < NumRecords && i < NumEntries; i++)
-	{
-		if(EntryRect.y + EntryRect.h > MapTimes.y + MapTimes.h)
-			break; // Don't render outside bounds
-		
-		const SMapTimeRecord *pRecord = GameClient()->m_MapTimes.GetRecord(i);
-		if(!pRecord)
-			break;
-		
-		// Format time to show only 2 decimals (like the existing implementation)
-		char aFormattedTime[32];
-		GameClient()->m_MapTimes.FormatTime(aFormattedTime, sizeof(aFormattedTime), pRecord->m_aTime);
-		
-		RenderEntry(EntryRect, pRecord->m_Rank, pRecord->m_aPlayerName, aFormattedTime, i, State);
-		EntryRect.y += State.m_LineHeight;
 	}
 }

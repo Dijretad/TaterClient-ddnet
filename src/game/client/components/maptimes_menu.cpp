@@ -305,7 +305,6 @@ void CMapTimesMenu::RenderMapTimes(CUIRect MapTimes, CMapTimesRenderState &State
 	MapTimes.HSplitTop(HeadlineFontsize * 2.0f, &Headline, &MapTimes);
 	
 	const float RankWidth = 80.0f;
-	const float TimeWidth = 140.0f;
 	const float Padding = 15.0f;
 	
 	// Render column headers

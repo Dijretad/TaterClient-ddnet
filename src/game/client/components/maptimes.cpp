@@ -439,14 +439,14 @@ void CMapTimes::ShowTop10InChat()
 {
 	if(!HasValidData())
 	{
-		GameClient()->m_Chat.AddLine(CChat::TEAM_ALL, 0, "No map times data available. Wait for the data to load or ensure you're on a valid map.");
+		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "No map times data available. Wait for the data to load or ensure you're on a valid map.");
 		return;
 	}
 	
 	// Header message
 	char aHeaderMsg[128];
 	str_format(aHeaderMsg, sizeof(aHeaderMsg), "=== Top %d Records for %s ===", m_NumRecords, m_aCurrentMap);
-	GameClient()->m_Chat.AddLine(CChat::TEAM_ALL, 0, aHeaderMsg);
+	GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aHeaderMsg);
 	
 	// Display each record
 	for(int i = 0; i < m_NumRecords; i++)
@@ -472,11 +472,11 @@ void CMapTimes::ShowTop10InChat()
 		else
 			str_copy(aFinalMsg, aRecordMsg, sizeof(aFinalMsg));
 		
-		GameClient()->m_Chat.AddLine(CChat::TEAM_ALL, 0, aFinalMsg);
+		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aFinalMsg);
 	}
 	
 	// Footer message
-	GameClient()->m_Chat.AddLine(CChat::TEAM_ALL, 0, "=========================");
+	GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "=========================");
 }
 
 void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)
@@ -489,7 +489,7 @@ void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)
 		const char *pCurrentMap = pMapTimes->Client()->GetCurrentMap();
 		if(pCurrentMap && pCurrentMap[0] != '\0')
 		{
-			pMapTimes->GameClient()->m_Chat.AddLine(CChat::TEAM_ALL, 0, "Requesting map times data... Please wait and try again in a few seconds.");
+			pMapTimes->GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "Requesting map times data... Please wait and try again in a few seconds.");
 			pMapTimes->RequestMapTimes(pCurrentMap);
 			return;
 		}

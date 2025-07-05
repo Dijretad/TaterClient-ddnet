@@ -6,6 +6,7 @@
 #include <engine/shared/http.h>
 #include <engine/textrender.h>
 #include <engine/shared/protocol.h>
+#include <engine/console.h>
 #include <game/client/component.h>
 #include <memory>
 

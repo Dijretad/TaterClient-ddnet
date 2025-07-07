@@ -2088,29 +2088,3 @@ void CHud::RenderRecord()
 		TextRender()->Text(53, 82, 6, aBuf, -1.0f);
 	}
 }
-
-void CHud::RenderMapTimesHud()
-{
-	// Check if feature is enabled
-	if(!g_Config.m_ClShowhudMapTimes)
-		return;
-		
-	// Check if map times component exists and has valid data
-	CMapTimes *pMapTimes = &GameClient()->m_MapTimes;
-	if(!pMapTimes || !pMapTimes->HasValidData())
-		return;
-	
-	// Calculate position (bottom-right corner)
-	const float BoxWidth = 180.0f;
-	const float BoxHeight = 120.0f;
-	const float Margin = 10.0f;
-	
-	// Adjust for status bar if enabled
-	float AdjustedHeight = m_Height - (g_Config.m_ClStatusBar ? g_Config.m_ClStatusBarHeight : 0.0f);
-	
-	const float StartX = m_Width - BoxWidth - Margin;
-	const float StartY = AdjustedHeight - BoxHeight - Margin;
-	
-	// Render the map times widget
-	pMapTimes->RenderMapTimes(StartX, StartY, BoxWidth, BoxHeight);
-}

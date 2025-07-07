@@ -361,67 +361,6 @@ void CMapTimes::RenderMapTimes(float x, float y, float w, float h)
 	}
 }
 
-void CMapTimes::RenderMapTimesTab(float x, float y)
-{
-	if(!g_Config.m_ClShowhudMapTimes || !HasValidData())
-		return;
-
-	// Use configurable text size (default 50% = half size)
-	const float BaseFontSize = 6.0f; // Reduced from 12.0f
-	const float FontSize = BaseFontSize * (g_Config.m_ClMapTimesTextSize / 100.0f);
-	const float LineHeight = FontSize + 4.0f;
-	const float HeaderHeight = FontSize + 10.0f;
-	
-	// Background
-	float Width = 250.0f;
-	float Height = HeaderHeight + (m_NumRecords * LineHeight) + 10.0f;
-	
-	// Use the current graphics context (scoreboard has already set up MapScreen)
-	Graphics()->SetColor(0.0f, 0.0f, 0.0f, 0.6f);
-	IGraphics::CQuadItem Quad(x, y, Width, Height);
-	Graphics()->QuadsBegin();
-	Graphics()->QuadsDraw(&Quad, 1);
-	Graphics()->QuadsEnd();
-	
-	// Header
-	TextRender()->SetFontPreset(EFontPreset::DEFAULT_FONT);
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
-	
-	char aHeader[64];
-	str_format(aHeader, sizeof(aHeader), "Top %d Records - %s", m_NumRecords, m_aCurrentMap);
-	
-	TextRender()->Text(x + 5.0f, y + 5.0f, FontSize + 2.0f, aHeader);
-	
-	// Records
-	for(int i = 0; i < m_NumRecords; i++)
-	{
-		const SMapTimeRecord &Record = m_aTopRecords[i];
-		float RecordY = y + HeaderHeight + (i * LineHeight);
-		
-		// Rank color
-		if(i == 0)
-			TextRender()->TextColor(1.0f, 0.8f, 0.0f, 1.0f); // Gold
-		else if(i == 1)
-			TextRender()->TextColor(0.8f, 0.8f, 0.8f, 1.0f); // Silver
-		else if(i == 2)
-			TextRender()->TextColor(0.8f, 0.5f, 0.2f, 1.0f); // Bronze
-		else
-			TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // White
-		
-		// Format time to show only 2 decimal places
-		char aFormattedTime[32];
-		FormatTime(aFormattedTime, sizeof(aFormattedTime), Record.m_aTime);
-		
-		// Format: "1. PlayerName - 1:23.45"
-		char aLine[128];
-		str_format(aLine, sizeof(aLine), "%d. %s - %s", i + 1, Record.m_aPlayerName, aFormattedTime);
-		
-		TextRender()->Text(x + 10.0f, RecordY, FontSize, aLine);
-	}
-	
-	TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f); // Reset color
-}
-
 void CMapTimes::FormatTime(char *pBuffer, int BufferSize, const char *pTimeString)
 {
 	// Input format: "00:20:02.440000"
@@ -489,9 +428,6 @@ void CMapTimes::ShowTop10InChat()
 		
 		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aFinalMsg);
 	}
-	
-	// Footer message
-	GameClient()->m_Chat.AddLine(TEAM_ALL, 0, "=========================");
 }
 
 void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)

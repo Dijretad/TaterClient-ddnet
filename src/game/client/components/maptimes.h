@@ -67,7 +67,6 @@ public:
 	
 	void Update();
 	void RenderMapTimes(float x, float y, float w, float h);
-	void RenderMapTimesFullscreen(float x, float y); // Nouveau rendu fullscreen
 	bool HasValidData() const { return m_State == STATE_DONE && m_NumRecords > 0; }
 	
 	// Accessors for leaderboard display

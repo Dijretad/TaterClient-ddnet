@@ -30,7 +30,7 @@ void CMapTimes::OnInit()
 	ResetTextContainers();
 	
 	// Register console commands
-	Console()->Register("show_top_10", "", CFGFLAG_CLIENT, ConShowTop10, this, "Show top 10 records for current map in chat");
+	Console()->Register("show_top", "i[count]", CFGFLAG_CLIENT, ConShowTop, this, "Show top N records for current map in chat (default: 10, max: 50)");
 	Console()->Register("+map_times", "", CFGFLAG_CLIENT, ConKeyMapTimes, this, "Show map times menu");
 }
 
@@ -42,6 +42,7 @@ void CMapTimes::OnReset()
 	m_LastRequestTime = 0;
 	m_LastUpdateTime = 0;
 	m_PendingChatDisplay = false;
+	m_RequestedCount = 10; // Default value
 	ResetTextContainers();
 	
 	if(m_pRequest)
@@ -234,7 +235,7 @@ void CMapTimes::Update()
 	if(m_PendingChatDisplay && HasValidData())
 	{
 		m_PendingChatDisplay = false;
-		ShowTop10InChat();
+		ShowTopInChat(m_RequestedCount);
 	}
 	// If request failed and we were waiting to show results, notify user
 	else if(m_PendingChatDisplay && m_State == STATE_ERROR)
@@ -389,7 +390,7 @@ void CMapTimes::FormatTime(char *pBuffer, int BufferSize, const char *pTimeStrin
 	str_copy(pBuffer, pTimeString, TotalLength + 1);
 }
 
-void CMapTimes::ShowTop10InChat()
+void CMapTimes::ShowTopInChat(int Count)
 {
 	if(!HasValidData())
 	{
@@ -397,13 +398,16 @@ void CMapTimes::ShowTop10InChat()
 		return;
 	}
 	
+	// Limit count to available records
+	int RecordsToShow = minimum(Count, m_NumRecords);
+	
 	// Header message
 	char aHeaderMsg[128];
-	str_format(aHeaderMsg, sizeof(aHeaderMsg), "=== Top %d Records for %s ===", m_NumRecords, m_aCurrentMap);
+	str_format(aHeaderMsg, sizeof(aHeaderMsg), "=== Top %d Records for %s ===", RecordsToShow, m_aCurrentMap);
 	GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aHeaderMsg);
 	
 	// Display each record
-	for(int i = 0; i < m_NumRecords; i++)
+	for(int i = 0; i < RecordsToShow; i++)
 	{
 		const SMapTimeRecord &Record = m_aTopRecords[i];
 		
@@ -415,29 +419,30 @@ void CMapTimes::ShowTop10InChat()
 		char aRecordMsg[256];
 		str_format(aRecordMsg, sizeof(aRecordMsg), "%d. %s - %s", i + 1, Record.m_aPlayerName, aFormattedTime);
 		
-		// Add medal emojis for top 3
-		char aFinalMsg[256];
-		if(i == 0)
-			str_format(aFinalMsg, sizeof(aFinalMsg), "🥇 %s", aRecordMsg);
-		else if(i == 1)
-			str_format(aFinalMsg, sizeof(aFinalMsg), "🥈 %s", aRecordMsg);
-		else if(i == 2)
-			str_format(aFinalMsg, sizeof(aFinalMsg), "🥉 %s", aRecordMsg);
-		else
-			str_copy(aFinalMsg, aRecordMsg, sizeof(aFinalMsg));
-		
-		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aFinalMsg);
+		// Display record without medal emojis
+		GameClient()->m_Chat.AddLine(TEAM_ALL, 0, aRecordMsg);
 	}
 }
 
-void CMapTimes::ConShowTop10(IConsole::IResult *pResult, void *pUser)
+void CMapTimes::ConShowTop(IConsole::IResult *pResult, void *pUser)
 {
 	CMapTimes *pMapTimes = (CMapTimes *)pUser;
+	
+	// Get the number of records to show (default: 10, max: 50)
+	int Count = 10;
+	if(pResult->NumArguments() > 0)
+	{
+		Count = pResult->GetInteger(0);
+		Count = clamp(Count, 1, 50); // Limit between 1 and 50
+	}
+	
+	// Store the requested count
+	pMapTimes->m_RequestedCount = Count;
 	
 	// If data is already available, show it immediately
 	if(pMapTimes->HasValidData())
 	{
-		pMapTimes->ShowTop10InChat();
+		pMapTimes->ShowTopInChat(Count);
 		return;
 	}
 	

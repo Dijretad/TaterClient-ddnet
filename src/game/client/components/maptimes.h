@@ -45,6 +45,7 @@ class CMapTimes : public CComponent
 	int64_t m_LastRequestTime;
 	int64_t m_LastUpdateTime;
 	bool m_PendingChatDisplay; // Flag to show results in chat when they arrive
+	int m_RequestedCount; // Number of records requested for chat display
 	
 	// Text containers for rendering
 	STextContainerIndex m_aPlayerNameContainers[MAX_TOP_RECORDS];
@@ -76,8 +77,8 @@ public:
 	void FormatTime(char *pBuffer, int BufferSize, const char *pTimeString);
 	
 	// Command functions
-	void ShowTop10InChat();
-	static void ConShowTop10(IConsole::IResult *pResult, void *pUser);
+	void ShowTopInChat(int Count);
+	static void ConShowTop(IConsole::IResult *pResult, void *pUser);
 	static void ConKeyMapTimes(IConsole::IResult *pResult, void *pUserData);
 };
 

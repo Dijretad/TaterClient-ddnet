@@ -30,7 +30,7 @@ class CMapTimes : public CComponent
 {
 	enum
 	{
-		MAX_TOP_RECORDS = 10,
+		MAX_TOP_RECORDS = 50,
 		STATE_IDLE,
 		STATE_LOADING,
 		STATE_DONE,

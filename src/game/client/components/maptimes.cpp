@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "maptimes.h"
 
+#include <algorithm>
 #include <base/log.h>
 #include <base/system.h>
 #include <engine/client.h>
@@ -433,7 +434,7 @@ void CMapTimes::ConShowTop(IConsole::IResult *pResult, void *pUser)
 	if(pResult->NumArguments() > 0)
 	{
 		Count = pResult->GetInteger(0);
-		Count = clamp(Count, 1, 50); // Limit between 1 and 50
+		Count = std::clamp(Count, 1, 50); // Limit between 1 and 50
 	}
 	
 	// Store the requested count

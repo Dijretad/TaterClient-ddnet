@@ -124,6 +124,7 @@ public:
 
 private:
 	void RenderRecord();
+	void RenderMapTimesHud();
 	void RenderDDRaceEffects();
 	float m_TimeCpDiff;
 	float m_ServerRecord;

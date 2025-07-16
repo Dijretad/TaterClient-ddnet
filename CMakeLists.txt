@@ -2417,6 +2417,8 @@ if(CLIENT)
     components/ghost.h
     components/hud.cpp
     components/hud.h
+    components/maptimes.cpp
+    components/maptimes.h
     components/infomessages.cpp
     components/infomessages.h
     components/items.cpp

@@ -166,6 +166,7 @@ void CGameClient::OnConsoleInit()
 					      &m_TouchControls,
 					      &m_Scoreboard,
 					      &m_Statboard,
+					      &m_MapTimesMenu, // Map times menu - render on top
 					      &m_Motd,
 					      &m_Menus,
 					      &m_Tooltips,
@@ -181,6 +182,7 @@ void CGameClient::OnConsoleInit()
 						  &m_GameConsole,
 						  &m_Chat, // chat has higher prio, due to that you can quit it by pressing esc
 						  &m_Motd, // for pressing esc to remove it
+						  &m_MapTimesMenu, // Map times menu
 						  &m_Spectator,
 						  &m_BindWheel,
 						  &m_Emoticon,

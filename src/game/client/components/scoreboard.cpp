@@ -11,6 +11,7 @@
 
 #include <game/client/animstate.h>
 #include <game/client/components/countryflags.h>
+#include <game/client/components/maptimes.h>
 #include <game/client/components/motd.h>
 #include <game/client/components/statboard.h>
 #include <game/client/gameclient.h>
@@ -666,6 +667,8 @@ void CScoreboard::OnRender()
 	const float Height = 400.0f * 3.0f;
 	const float Width = Height * Graphics()->ScreenAspect();
 	Graphics()->MapScreen(0, 0, Width, Height);
+
+	// Map times widget has been moved to dedicated menu (accessible with configurable key)
 
 	const CNetObj_GameInfo *pGameInfoObj = GameClient()->m_Snap.m_pGameInfoObj;
 	const bool Teams = GameClient()->IsTeamPlay();

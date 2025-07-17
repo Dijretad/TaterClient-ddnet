@@ -1928,6 +1928,7 @@ void CHud::OnRender()
 		if(g_Config.m_ClShowRecord)
 			RenderRecord();
 		RenderMapTimesHud(); // Add map times rendering
+// Map times now shown in scoreboard tab instead of HUD
 	}
 	RenderCursor();
 }
